@@ -16,7 +16,7 @@ class User(AbstractUser, BaseModel):
     role = models.CharField(max_length=50, default='user')
 
     def __str__(self):
-        return f'User - {self.email}'
+        return f'User - {self.email} {self.id}'
 
     @property
     def full_name(self):
