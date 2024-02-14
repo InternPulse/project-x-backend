@@ -1,0 +1,5 @@
+secrets
+.env
+ipsa/*
+__pycache__/*
+*.pyc
