@@ -3,7 +3,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from utils.models import BaseModel
-
+from pyotp import random_base32
 
 
 class User(AbstractUser, BaseModel):
@@ -15,7 +15,9 @@ class User(AbstractUser, BaseModel):
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     role = models.CharField(max_length=50, default='user')
-
+    secret = models.CharField(max_length=16, default=random_base32)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     def __str__(self):
         return f'User - {self.email} {self.id}'
 
