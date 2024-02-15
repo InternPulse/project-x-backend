@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.staticfiles',
     'user_management',
+    'notifications',
 ]
 
 MIDDLEWARE = [
