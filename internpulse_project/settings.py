@@ -24,9 +24,17 @@ SECRET_KEY = 'django-insecure-t!us)@3(t4zq=%(yaa7&s@f6_x2m#v!$fcvdq5z50aj$(3jnmy
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
-
+CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS = [
+        '8d3e-2c0f-2a80-3a-310-58c5-86df-2a5b-6057.ngrok-free.app',
+        '127.0.0.1',
+        'localhost',
+        ]
+#CORS_ALLOWED_ORIGINS = [
+#    'http://localhost:8000',
+#    'http://127.0.0.1:8000',
+#    'https://8d3e-2c0f-2a80-3a-310-58c5-86df-2a5b-6057.ngrok-free.app'
+#]
 
 # Application definition
 
@@ -36,7 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'corsheaders',
     'django.contrib.staticfiles',
+    'user_management',
 ]
 
 MIDDLEWARE = [
@@ -45,6 +55,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -105,12 +116,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'UTC' # I'm using termux. WIll switch it to utc when I get a new laptop
 
 USE_I18N = True
 
 USE_TZ = True
 
+AUTH_USER_MODEL = 'user_management.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
