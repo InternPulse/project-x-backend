@@ -24,6 +24,8 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = [
@@ -35,6 +37,7 @@ ALLOWED_HOSTS = [
 #    'http://127.0.0.1:8000',
 #    'https://8d3e-2c0f-2a80-3a-310-58c5-86df-2a5b-6057.ngrok-free.app'
 #]
+
 
 # Application definition
 
@@ -121,11 +124,13 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC' # I'm using termux. WIll switch it to utc when I get a new laptop
 
+
 USE_I18N = True
 
 USE_TZ = True
 
 AUTH_USER_MODEL = 'user_management.User'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
