@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from utils.models import BaseModel
 
-
-
 class User(AbstractUser, BaseModel):
     """Custom user model"""
     email = models.EmailField(unique=True)
@@ -25,3 +23,7 @@ class User(AbstractUser, BaseModel):
 
     class Meta:
         abstract = False
+
+
+
+
