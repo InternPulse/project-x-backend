@@ -1,6 +1,6 @@
+<<<<<<< HEAD
 """A wrapper class around the default JWTAuthentication class to check 
-if the token is blacklisted"""
-
+if the token is blacklisted before authenticating the user"""
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
