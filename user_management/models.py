@@ -1,5 +1,6 @@
 """Models relating to user management"""
 
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from utils.models import BaseModel
@@ -17,14 +18,10 @@ class User(AbstractUser, BaseModel):
     role = models.CharField(max_length=50, default='user')
     secret = models.CharField(max_length=16, default=random_base32)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS: list = []
     def __str__(self):
         return f'User - {self.email} {self.id}'
 
-    @property
-    def username(self):
-        """Returns the user's username."""
-        return self.profile.username
     @property
     def full_name(self):
         """Returns the user's full name."""
@@ -48,7 +45,6 @@ class BLToken(BaseModel):
 class Profile(BaseModel):
     """Profile model"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    username = models.CharField(max_length=150, unique=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     address = models.CharField(max_length=150, blank=True, default="")
     phone_number = models.CharField(max_length=15, blank=True, default="")
