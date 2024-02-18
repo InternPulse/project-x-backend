@@ -8,3 +8,4 @@ __pycache__/*
 *.swp
 __mypy_cache__/*
 .vscode/*
+db.sqlite3
