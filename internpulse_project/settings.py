@@ -160,7 +160,6 @@ SWAGGER_SETTINGS = {
 OTP = {
         'expiry': config('OTP_EXPIRY', cast=float),
         "length": config("OTP_LENGTH", cast=int),
-        "key": config("OTP_SECRET_KEY")
 }
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
