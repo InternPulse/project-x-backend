@@ -17,6 +17,6 @@ class CustomJWTAuthentication(JWTAuthentication):
         header = self.get_header(request)
         if result:
             token = self.get_raw_token(header).decode('utf-8')
-            if BLToken.objects.filter(key=token).exists():
+            if BLToken.objects.filter(token=token).exists():
                 raise AuthenticationFailed('Token is blacklisted')
         return result

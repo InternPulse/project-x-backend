@@ -7,3 +7,4 @@ __pycache__/*
 *.pyo
 *.swp
 __mypy_cache__/*
+.vscode/*

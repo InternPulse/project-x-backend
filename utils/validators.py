@@ -2,7 +2,7 @@
 
 
 from rest_framework.serializers import ValidationError
-
+from django.conf import settings
 
 def validate_name(name: str) -> bool :
     """Validates the name of a user"""
@@ -20,3 +20,11 @@ def validate_password(password: str) -> bool :
         raise ValidationError("Password must have at least one number")
     if not any(x.isalpha() for x in password):
         raise ValidationError("Password must have at least one letter")
+
+
+def validate_otp(otp: str) -> bool: 
+    """Validates the OTP of a user"""
+    if len(otp) != settings.OTP['length']:
+        raise ValidationError(f"OTP must be {settings.OTP['length']} characters long")
+    if not otp.isdigit():
+        raise ValidationError("OTP must be a number")

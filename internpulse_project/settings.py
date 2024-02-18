@@ -156,8 +156,8 @@ SWAGGER_SETTINGS = {
     },
 }
 OTP = {
-        'expiry': config('OTP_EXPIRY'),
-        "length": config("OTP_LENGTH"),
+        'expiry': config('OTP_EXPIRY', cast=float),
+        "length": config("OTP_LENGTH", cast=int),
         "key": config("OTP_SECRET_KEY")
 }
 # Password validation

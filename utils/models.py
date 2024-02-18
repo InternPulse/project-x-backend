@@ -26,3 +26,4 @@ class BaseModel(models.Model):
         instance = cls.objects.create(*args, **kwargs)
         return instance
 
+

@@ -1,13 +1,11 @@
 """All serializers for the views involved in the authentication and account management process"""
 
-
-from rest_framework import serializers
 from rest_framework.serializers import (
     ModelSerializer,
     EmailField,
     CharField,
     ValidationError,
-    #  SerializerMethodField,
+    ChoiceField,
     Serializer,
 )
 
@@ -21,7 +19,7 @@ from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
-class CustomLoginSerializer(ModelSerializer):
+class CustomLoginSerializer(Serializer):
     """A custom login serializer method that uses email or username to login"""
     email = CharField(validators=[v.validate_name])
     password = CharField(validators=[v.validate_password])
@@ -64,11 +62,17 @@ class SignUpSerializer(ModelSerializer):
     def create(self, validated_data: dict) -> AuthUser:
         """Create a new user"""
         try:
-            user = User.objects.create_user(**validated_data)
+            password = validated_data.pop("password")
+            validated_data['username'] = validated_data['email']
+            user = User.objects.create(**validated_data)
+            user.set_password(password)
+            user.save()
         except IntegrityError as e:
             if 'email' in str(e):
                 raise ValidationError('User with this email already exists')
             else:
+                print(e)
+                raise e
                 raise ValidationError('Invalid data')
         return user
 
@@ -79,10 +83,11 @@ class UserManageSerializer(ModelSerializer):
     first_name = CharField(required=False, validators=[v.validate_name])
     last_name = CharField(required=False, validators=[v.validate_name])
     middle_name = CharField(required=False, validators=[v.validate_name])
+    role = ChoiceField(choices=User.USER_ROLES, required=False)
+    id = CharField(read_only=True) # It is an integer a big integer but it is represented as a character so that we can view it properly
     class Meta:
         model = User
-        fields = ['email', 'middle_name', 'id', 'first_name', 'last_name']
-        read_only_fields = ['id']
+        fields = ['email', 'middle_name', 'id', 'first_name', 'last_name', 'role']
 
     def update(self, instance, validated_data):
         try:
@@ -102,3 +107,17 @@ class PasswordResetSerializer(Serializer):
 
 class EmptySerializer(Serializer):
     pass
+
+class OTPSerializer(Serializer):
+    otp = CharField(validators=[v.validate_otp], required = False)
+    link = CharField(required = False)
+    email = EmailField(required = False)
+
+    def validate(self, data):
+        token = data.get('link')
+        otp = data.get('otp')
+        email = data.get('email')
+
+        if token is None and (otp is None or email is None):
+            raise ValidationError("Either link or both otp and email must be provided")
+        return data
