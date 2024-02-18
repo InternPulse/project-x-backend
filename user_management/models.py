@@ -36,7 +36,6 @@ class User(AbstractUser, BaseModel):
 
 class BLToken(BaseModel):
     """Blacklisted token model"""
-
     token = models.CharField(max_length=500)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
