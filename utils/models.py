@@ -1,5 +1,6 @@
 from django.db import models
 from utils.snowflakes import Snowflake
+from django.utils import timezone
 
 
 class BaseModel(models.Model):
@@ -12,3 +13,17 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        """Override the save method to update the updated_at field"""
+        self.updated_at = timezone.now()
+        super().save(*args, **kwargs)
+
+
+    @classmethod
+    def new(cls, *args, **kwargs):
+        """Override the new method to update the created_at field"""
+        instance = cls.objects.create(*args, **kwargs)
+        return instance
+
+
