@@ -5,3 +5,7 @@ env/*
 __pycache__/*
 *.pyc
 *.pyo
+*.swp
+__mypy_cache__/*
+.vscode/*
+db.sqlite3
