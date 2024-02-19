@@ -308,9 +308,30 @@ class ProfileView(RetrieveUpdateDestroyAPIView):
 
 
 class GoogleLoginView(SocialLoginView):
+    """This view is for logging in a user via google. It has been tweaked to also return jwt
+    tokens for use in case of other clients like mobile apps, etc but it creates a session for the
+    user"""
     adapter_class = GoogleOAuth2Adapter
     callback_url = settings.GOOGLE_REDIRECT_URL
     client_class = OAuth2Client
+
+    # The next three functions are a workaround for me to return jwt tokens still even though the
+    # login creates a session for the user with cookies.
+    def complete_login(self, request, app, token, **kwargs):
+        login = self.adapter.complete_login(request, app, token, **kwargs)
+        token = self.get_token(login.account.user)
+        print("yay")
+        return self.get_response_data(token)
+
+    def get_token(self, user):
+        refresh = RefreshToken.for_user(user)
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }
+
+    def get_response_data(self, token):
+        return Response(token)
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
     """

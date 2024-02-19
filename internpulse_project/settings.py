@@ -34,12 +34,6 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
 ]
-# CORS_ALLOWED_ORIGINS = [
-#    'http://localhost:8000',
-#    'http://127.0.0.1:8000',
-#    'https://8d3e-2c0f-2a80-3a-310-58c5-86df-2a5b-6057.ngrok-free.app'
-# ]
-
 
 # Application definition
 
@@ -208,23 +202,6 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-GOOGLE_REDIRECT_URL = config("GOOGLE_REDIRECT_URL", default="http://localhost:8000/swagger/")
+GOOGLE_REDIRECT_URL = config("GOOGLE_REDIRECT_URL", default="http://localhost:8000/callback/")
 SITE_ID = 1
-LOGIN_REDIRECT_URL = "http://localhost:8000/swagger/"
 ACCOUNT_EMAIL_VERIFICATION = "none"
-SOCIALACCOUNT_QUERY_EMAIL = True
-ACCOUNT_LOGOUT_ON_GET= True
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_REQUIRED = True
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
