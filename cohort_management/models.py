@@ -18,8 +18,10 @@ class InternProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE)
     role_choices = [
-        ('admin', 'Admin'),
-        ('member', 'Member'),
+        ('Product designer', 'Product designer'),
+        ('Backend developer', 'Backend developer'),
+        ('Frontend developer', 'Frontend developer'),
+        ('Product manager', 'Product manager'),
     ]
     role = models.CharField(max_length=50, choices=role_choices)
     certificate_id = models.BigIntegerField(null=True)  # Reference to Certificate model
