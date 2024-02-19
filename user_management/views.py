@@ -1,43 +1,50 @@
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404
+from django.views.generic import RedirectView
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import (
     CreateAPIView,
     GenericAPIView,
     ListAPIView,
     RetrieveUpdateDestroyAPIView,
 )
-from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenBlacklistView,
+    TokenObtainPairView,
     TokenRefreshView,
 )
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.shortcuts import get_object_or_404
+
 from user_management.permissions import IsAdminPermission
+from utils.otp import generate_otp_link, get_otp, verify_otp, verify_otp_link
+
 from .backends import CustomJWTAuthentication
-from django.conf import settings
-from utils.otp import generate_otp_link, verify_otp_link, verify_otp, get_otp
-from django.contrib.auth import get_user_model
+from .models import BLToken, Profile
 from .serializers import (
     CustomLoginSerializer,
     OTPSerializer,
-    ProfileManageSerializer,
-    SignUpSerializer,
-    RequestSerializer,
     PasswordResetSerializer,
+    ProfileManageSerializer,
+    RequestSerializer,
+    SignUpSerializer,
     UserManageSerializer,
 )
-from rest_framework.status import (
-    HTTP_201_CREATED,
-    HTTP_200_OK,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_403_FORBIDDEN,
-    HTTP_204_NO_CONTENT,
-)
-from .models import BLToken, Profile
 
 User = get_user_model()
 
@@ -272,7 +279,7 @@ class UserView(GenericAPIView):
 class UserListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserManageSerializer
-    queryset = User.objects.all().order_by('id')
+    queryset = User.objects.all().order_by("id")
 
     def get_queryset(self):
         user = self.request.user
@@ -298,3 +305,19 @@ class ProfileView(RetrieveUpdateDestroyAPIView):
 
     def put(self, request, *args, **kwargs):
         raise MethodNotAllowed("PUT", detail="PUT method is not allowed on this route")
+
+
+class GoogleLoginView(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+    callback_url = settings.GOOGLE_REDIRECT_URL
+    client_class = OAuth2Client
+
+class UserRedirectView(LoginRequiredMixin, RedirectView):
+    """
+    This view is needed by the dj-rest-auth-library in order to work the google login. It's a bug.
+    """
+
+    permanent = False
+
+    def get_redirect_url(self):
+        return "redirect-url"

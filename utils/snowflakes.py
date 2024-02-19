@@ -1,8 +1,11 @@
 """Snowflake ID generator for Django models"""
+
 import time
+
 
 class Snowflake:
     """Snowflake ID generator for Django models"""
+
     def __init__(self, worker_id, datacenter_id):
         self.worker_id = worker_id
         self.datacenter_id = datacenter_id
@@ -20,11 +23,16 @@ class Snowflake:
 
         self.worker_id_shift = self.sequence_bits
         self.datacenter_id_shift = self.sequence_bits + self.worker_bits
-        self.timestamp_shift = self.sequence_bits + self.worker_bits + self.datacenter_bits
+        self.timestamp_shift = (
+            self.sequence_bits + self.worker_bits + self.datacenter_bits
+        )
         self.sequence_mask = -1 ^ (-1 << self.sequence_bits)
 
         # Validate worker ID and datacenter ID
-        if self.worker_id > self.max_worker_id or self.datacenter_id > self.max_datacenter_id:
+        if (
+            self.worker_id > self.max_worker_id
+            or self.datacenter_id > self.max_datacenter_id
+        ):
             raise ValueError("Worker ID or Datacenter ID is greater than max")
 
     def generate_id(self):
@@ -42,10 +50,12 @@ class Snowflake:
 
         self.timestamp = now
 
-        snowflake_id = ((now - self.twepoch) << self.timestamp_shift) | \
-                       (self.datacenter_id << self.datacenter_id_shift) | \
-                       (self.worker_id << self.worker_id_shift) | \
-                       self.sequence
+        snowflake_id = (
+            ((now - self.twepoch) << self.timestamp_shift)
+            | (self.datacenter_id << self.datacenter_id_shift)
+            | (self.worker_id << self.worker_id_shift)
+            | self.sequence
+        )
 
         return snowflake_id
 

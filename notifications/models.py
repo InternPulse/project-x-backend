@@ -1,9 +1,12 @@
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
+
 from utils.models import BaseModel
+
 # Create your models here.
 
 User = get_user_model()
+
 
 class Notification(BaseModel):
     message = models.TextField(null=False)
@@ -44,7 +47,7 @@ class DefermentTicket(BaseModel):
             ("PENDING", "Pending"),
             ("APPROVED", "Approved"),
         ],
-        max_length=50
+        max_length=50,
     )
 
 

@@ -1,8 +1,12 @@
 # cohort_management/models.py
 
 from django.db import models
-from user_management.models import User  # Import the User model from user_management app
+
+from user_management.models import (
+    User,
+)  # Import the User model from user_management app
 from utils.models import BaseModel
+
 
 class Cohort(models.Model):
     title = models.CharField(max_length=100)
@@ -11,6 +15,7 @@ class Cohort(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class InternProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
