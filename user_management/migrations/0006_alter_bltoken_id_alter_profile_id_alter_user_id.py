@@ -7,27 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('notifications', '0004_alter_defermentticket_id_alter_notification_id_and_more'),
+        ('user_management', '0005_alter_user_id'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='defermentticket',
+            model_name='bltoken',
             name='id',
             field=models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False),
         ),
         migrations.AlterField(
-            model_name='notification',
+            model_name='profile',
             name='id',
             field=models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False),
         ),
         migrations.AlterField(
-            model_name='paymentticket',
-            name='id',
-            field=models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False),
-        ),
-        migrations.AlterField(
-            model_name='talentrequestticket',
+            model_name='user',
             name='id',
             field=models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False),
         ),

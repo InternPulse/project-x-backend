@@ -317,11 +317,17 @@ class GoogleLoginView(SocialLoginView):
 
     # The next three functions are a workaround for me to return jwt tokens still even though the
     # login creates a session for the user with cookies.
-    def complete_login(self, request, app, token, **kwargs):
-        login = self.adapter.complete_login(request, app, token, **kwargs)
-        token = self.get_token(login.account.user)
-        print("yay")
-        return self.get_response_data(token)
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        user = self.user
+        token = self.get_token(user)
+        data = token
+
+        # Check if the user was just created
+        if self.token.login.is_new:
+            data['message'] = 'Welcome! Thanks for creating an account.'
+
+        return Response(data)
 
     def get_token(self, user):
         refresh = RefreshToken.for_user(user)
@@ -329,9 +335,6 @@ class GoogleLoginView(SocialLoginView):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
-
-    def get_response_data(self, token):
-        return Response(token)
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
     """
