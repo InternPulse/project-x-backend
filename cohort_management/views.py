@@ -1,5 +1,3 @@
-# cohort_management/views.py
-
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -8,12 +6,14 @@ from .models import Cohort, InternProfile
 from .serializers import CohortSerializer, InternProfileSerializer
 
 class CohortListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Cohort.objects.all()
     serializer_class = CohortSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Cohort.objects.all()
+
     def get(self, request, *args, **kwargs):
-        cohorts = self.queryset
+        cohorts = self.get_queryset()
         serializer = self.serializer_class(cohorts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -30,12 +30,14 @@ class CohortRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 class InternProfileListCreateAPIView(generics.ListCreateAPIView):
-    queryset = InternProfile.objects.order_by('created_at')
     serializer_class = InternProfileSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return InternProfile.objects.order_by('created_at')
+
     def get(self, request, *args, **kwargs):
-        profiles = self.queryset
+        profiles = self.get_queryset()
         serializer = self.serializer_class(profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

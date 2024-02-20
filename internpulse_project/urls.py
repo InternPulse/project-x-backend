@@ -27,5 +27,5 @@ urlpatterns = [
     path('auth/', include('user_management.urls')),
     path('cohort/', include('cohort_management.urls')),  # Include cohort_management URLs
     path('interns/', include('cohort_management.urls')),  # Include cohort_management URLs
-    path('api/', include('cohort_management.urls')),  # Include cohort management URLs
+    path('api/v1/', include('cohort_management.urls')),  # Include cohort management URLs
 ]
