@@ -1,11 +1,11 @@
 """Utility validator function for """
 
-
-from rest_framework.serializers import ValidationError
-from django.conf import settings
 import os
 import re
+
 import magic
+from django.conf import settings
+from rest_framework.serializers import ValidationError
 
 
 def validate_name(name: str) -> bool:
@@ -53,6 +53,5 @@ def validate_image(file):
     ext = os.path.splitext(file.name)[1]
     if ext.lower() not in valid_file_extensions:
         raise ValidationError("Unacceptable file extension.")
-    if filesize > 8*1024*1024:
+    if filesize > 8 * 1024 * 1024:
         raise ValidationError("The maximum file size that can be uploaded is 8MB")
-

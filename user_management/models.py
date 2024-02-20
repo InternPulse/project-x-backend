@@ -1,10 +1,10 @@
 """Models relating to user management"""
 
-
-from django.db import models
 from django.contrib.auth.models import AbstractUser
-from utils.models import BaseModel
+from django.db import models
 from pyotp import random_base32
+
+from utils.models import BaseModel
 
 
 class User(AbstractUser, BaseModel):
@@ -36,6 +36,7 @@ class User(AbstractUser, BaseModel):
 
 class BLToken(BaseModel):
     """Blacklisted token model"""
+
     token = models.CharField(max_length=500)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
