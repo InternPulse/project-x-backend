@@ -30,7 +30,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-
+from urllib.parse import unquote
 from user_management.permissions import IsAdminPermission
 from utils.otp import generate_otp_link, get_otp, verify_otp, verify_otp_link
 
@@ -38,6 +38,7 @@ from .backends import CustomJWTAuthentication
 from .models import BLToken, Profile
 from .serializers import (
     CustomLoginSerializer,
+    EmptySerializer,
     OTPSerializer,
     PasswordResetSerializer,
     ProfileManageSerializer,
@@ -281,13 +282,6 @@ class UserListView(ListAPIView):
     serializer_class = UserManageSerializer
     queryset = User.objects.all().order_by("id")
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:
-            pass
-        return get_user_model().objects.all()
-        # return get_user_model().objects.filter(id=user.id)
-
 
 class ProfileView(RetrieveUpdateDestroyAPIView):
     serializer_class = ProfileManageSerializer
@@ -310,31 +304,35 @@ class ProfileView(RetrieveUpdateDestroyAPIView):
 class GoogleLoginView(SocialLoginView):
     """This view is for logging in a user via google. It has been tweaked to also return jwt
     tokens for use in case of other clients like mobile apps, etc but it creates a session for the
-    user"""
+    user
+    It is using the defauls serializer class for the body in case we may need to deal with other
+    providers in the future but this is the expected body
+    ```python
+    {
+        "code": "4/00sdhfhdgfksnbsdfyghfgdxknkjfdhjhdjQ"
+    }
+    ```
+    """
     adapter_class = GoogleOAuth2Adapter
     callback_url = settings.GOOGLE_REDIRECT_URL
     client_class = OAuth2Client
 
     # The next three functions are a workaround for me to return jwt tokens still even though the
     # login creates a session for the user with cookies.
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        user = self.user
-        token = self.get_token(user)
-        data = token
 
-        # Check if the user was just created
-        if self.token.login.is_new:
-            data['message'] = 'Welcome! Thanks for creating an account.'
 
-        return Response(data)
 
-    def get_token(self, user):
-        refresh = RefreshToken.for_user(user)
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
+class GoogleCallBackView(GenericAPIView):
+    serializer_class = EmptySerializer
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        encoded_code = request.query_params.get('code', None)
+        if encoded_code:
+            decoded_code = unquote(encoded_code)
+            return Response({'code': decoded_code}, status=HTTP_200_OK)
+        return Response({'message': 'No code provided or Invalid code'}, status=HTTP_400_BAD_REQUEST)
+
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
     """

@@ -9,8 +9,6 @@ class Cohort(BaseModel):
     title = models.CharField(max_length=100)
     description = models.TextField()
     rules = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -26,8 +24,6 @@ class InternProfile(BaseModel):
     ]
     role = models.CharField(max_length=50, choices=role_choices)
     certificate_id = models.BigIntegerField(null=True)  # Reference to Certificate model
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

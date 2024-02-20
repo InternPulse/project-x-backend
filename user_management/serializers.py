@@ -176,3 +176,11 @@ class OTPSerializer(Serializer):
         if token is None and (otp is None or email is None):
             raise ValidationError("Either link or both otp and email must be provided")
         return data
+
+class SocialLoginSerializer(ModelSerializer):
+    access = CharField()
+    refresh = CharField()
+
+    class Meta:
+        model = User
+        fields = ["access", "refresh"]

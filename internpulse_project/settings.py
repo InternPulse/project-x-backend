@@ -157,6 +157,8 @@ OTP = {
     "expiry": config("OTP_EXPIRY", cast=float),
     "length": config("OTP_LENGTH", cast=int),
 }
+WORKER_ID = config("WORKER_ID", cast=int)
+DATACENTER_ID = config("DATACENTER_ID", cast=int)
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -202,6 +204,14 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-GOOGLE_REDIRECT_URL = config("GOOGLE_REDIRECT_URL", default="http://localhost:8000/callback/")
+GOOGLE_REDIRECT_URL = config("GOOGLE_REDIRECT_URL", default="http://localhost:8000/auth/google/callback/")
 SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = "none"
+TOKEN_MODEL = None
+REST_AUTH = {
+    "JWT_AUTH_HTTPONLY": False,
+    "USE_JWT": True,
+    "TOKEN_MODEL": None,
+    "JWT_SERIALIZER": "user_management.serializers.SocialLoginSerializer"
+
+}

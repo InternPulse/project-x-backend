@@ -24,6 +24,7 @@ pylint==3.0.3
 pyotp==2.9.0
 python-decouple==3.8
 python-dotenv==0.21.1
+ python-flax-id==1.1.0
 python-magic==0.4.27
 python-magic-bin==0.4.14
 pytz==2024.1
