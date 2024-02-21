@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-t!us)@3(t4zq=%(yaa7&s@f6_x2m#v!$fcvdq5z50aj$(3jnmy'
+PAYSTACK_SECRET_KEY = 'sk_test_886a80f6c9a6473c3f9ddc8bc4bf5a5343f9a05d'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -51,7 +52,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user_management',
     'notifications',
-    'cohort_management'
+    'cohort_management',
+    'paymentintergration',
+    'rest_framework',
+    'rest_framework.authtoken'
 ]
 
 MIDDLEWARE = [
@@ -114,6 +118,16 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+'DEFAULT_AUTHENTICATION_CLASSES': (
+'rest_framework.authentication.SessionAuthentication',
+'rest_framework.authentication.TokenAuthentication',
+),
+    'DEFAULT_PERMISSION_CLASSES': (
+    'rest_framework.permissions.IsAuthenticated',
+)
+}
 
 
 # Internationalization
