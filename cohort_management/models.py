@@ -15,7 +15,7 @@ class Cohort(BaseModel):
 
 class InternProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE)
+    cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE, related_name='interns')
     role_choices = [
         ('Product designer', 'Product designer'),
         ('Backend developer', 'Backend developer'),
