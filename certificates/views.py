@@ -9,7 +9,7 @@ from django.http import Http404
 from .models import Certificate
 from .serializers import CertificateSerializer, CertificateIssueBatchSerializer
 
-from cohort_management.models import InternProfile
+from cohort_management.models import InternProfile, Cohort
 
 
 # Create your views here.
@@ -49,10 +49,19 @@ class CertificateIssueBatchAPIView(generics.CreateAPIView):
         try:
             certificate = Certificate.objects.get(id=certificate_id)
         except Certificate.DoesNotExist:
-            raise Http404("Certificate does not exist")
+            context['status'] = 'error'
+            context['message'] = 'Certificate does exist'
+            return Response(context, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            cohort = Cohort.objects.get(id=cohort_id)
+        except Cohort.DoesNotExist:
+            context['status'] = 'error'
+            context['message'] = 'Cohort does exist'
+            return Response(context, status=status.HTTP_404_NOT_FOUND)
 
         if cohort_id:
-            interns = InternProfile.objects.filter(cohort__id=cohort_id)
+            interns = InternProfile.objects.filter(cohort=cohort)
         else:
             interns = InternProfile.objects.filter(id__in=intern_ids)
 
@@ -64,5 +73,7 @@ class CertificateIssueBatchAPIView(generics.CreateAPIView):
                 'intern_id': intern.id,
                 'certificate_id': certificate_id
             })
-
-        return Response({'status': 'success', 'certificates_issued': certificates_issued}, status=status.HTTP_200_OK)
+        
+        context['status'] = 'success'
+        context['certificates_issued'] = certificates_issued
+        return Response(context, status=status.HTTP_200_OK)
