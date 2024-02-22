@@ -9,3 +9,12 @@ __pycache__/*
 __mypy_cache__/*
 .vscode/*
 db.sqlite3
+magic
+projectxenv
+
+# ignoring app caches and migrations to avoid conflict during deployment
+!**/__pycache__**
+**/__pycache__/**
+**/migrations/**
+!**/migrations
+!**/migrations/__init__.py
