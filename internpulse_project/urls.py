@@ -23,13 +23,13 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 urlpatterns = [
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path("~redirect/", UserRedirectView.as_view(), name="redirect"),
-    path("accounts/", include('allauth.urls')),
-    path('auth/', include('user_management.urls')),
-    path('cohort/', include('cohort_management.urls')),  # Include cohort_management URLs
-    path('interns/', include('cohort_management.urls')),  # Include cohort_management URLs
+    path("api/v1/", include('allauth.urls')),
+    path('api/v1/', include('user_management.urls')),
+    path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
+    path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
     path('api/v1/', include('cohort_management.urls')),  # Include cohort management URLs
     path('cert/', include('certificates.urls')),  # Include certificate URLs
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

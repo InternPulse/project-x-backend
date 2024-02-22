@@ -1,4 +1,5 @@
 venv/*
+venv4/*
 env/*
 .env
 .secrets
@@ -18,3 +19,6 @@ projectxenv
 **/migrations/**
 !**/migrations
 !**/migrations/__init__.py
+
+# Django
+**/migrations/
