@@ -8,70 +8,121 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='DefermentTicket',
+            name="DefermentTicket",
             fields=[
-                ('id', models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('deferment_reason', models.TextField(null=True)),
-                ('status', models.CharField(choices=[('DECLINED', 'Declined'), ('PENDING', 'Pending'), ('APPROVED', 'Approved')], max_length=50)),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        default=utils.snowflakes.Snowflake.generate_id,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("deferment_reason", models.TextField(null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("DECLINED", "Declined"),
+                            ("PENDING", "Pending"),
+                            ("APPROVED", "Approved"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Notification',
+            name="Notification",
             fields=[
-                ('id', models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('message', models.TextField()),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        default=utils.snowflakes.Snowflake.generate_id,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("message", models.TextField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='PaymentTicket',
+            name="PaymentTicket",
             fields=[
-                ('id', models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('payment_reason', models.TextField()),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('status', models.CharField(choices=[('UNSUCCESSFUL', 'Unsuccessful'), ('PENDING', 'Pending'), ('SUCCESSFUL', 'Successful')], max_length=50)),
-                ('account_number', models.CharField(max_length=50)),
-                ('account_owner', models.CharField(max_length=11)),
-                ('account_bank', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        default=utils.snowflakes.Snowflake.generate_id,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("payment_reason", models.TextField()),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("UNSUCCESSFUL", "Unsuccessful"),
+                            ("PENDING", "Pending"),
+                            ("SUCCESSFUL", "Successful"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("account_number", models.CharField(max_length=50)),
+                ("account_owner", models.CharField(max_length=11)),
+                ("account_bank", models.CharField(max_length=50)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='TalentRequestTicket',
+            name="TalentRequestTicket",
             fields=[
-                ('id', models.BigIntegerField(default=utils.snowflakes.Snowflake.generate_id, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('company_name', models.CharField(max_length=50)),
-                ('company_mail', models.EmailField(max_length=254)),
-                ('company_address', models.CharField(max_length=50)),
-                ('country', models.CharField(max_length=50)),
-                ('state', models.CharField(max_length=50)),
-                ('city', models.CharField(max_length=50)),
-                ('zipcode', models.CharField(max_length=50)),
-                ('phone_number', models.CharField(max_length=50)),
-                ('talent_count', models.IntegerField()),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        default=utils.snowflakes.Snowflake.generate_id,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("company_name", models.CharField(max_length=50)),
+                ("company_mail", models.EmailField(max_length=254)),
+                ("company_address", models.CharField(max_length=50)),
+                ("country", models.CharField(max_length=50)),
+                ("state", models.CharField(max_length=50)),
+                ("city", models.CharField(max_length=50)),
+                ("zipcode", models.CharField(max_length=50)),
+                ("phone_number", models.CharField(max_length=50)),
+                ("talent_count", models.IntegerField()),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]
