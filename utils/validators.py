@@ -1,9 +1,6 @@
 """Utility validator function for """
-
-import os
+import filetype
 import re
-
-import magic
 from django.conf import settings
 from rest_framework.serializers import ValidationError
 
@@ -37,7 +34,7 @@ def validate_otp(otp: str) -> bool:
 def validate_phone(phone: str) -> bool:
     phone_regex = r"^\+\d{1,4}\s\d{1,14}$"
     if len(phone) > 20:
-        raise ValidationError("Phone number must be less that 20 digits long")
+        raise ValidationError("Phone number must be less than 20 digits long")
     if not re.match(phone_regex, phone):
         raise ValidationError("Phone number must be in the format +234 1234567890")
 
@@ -45,13 +42,17 @@ def validate_phone(phone: str) -> bool:
 def validate_image(file):
     valid_mime_types = ["image/jpeg", "image/png"]
     filesize = file.size
-    file_mime_type = magic.from_buffer(file.read(1024), mime=True)
-    print(file_mime_type)
-    if file_mime_type not in valid_mime_types:
-        raise ValidationError("Unsupported file type.")
     valid_file_extensions = [".png", ".jpg", ".jpeg"]
-    ext = os.path.splitext(file.name)[1]
-    if ext.lower() not in valid_file_extensions:
-        raise ValidationError("Unacceptable file extension.")
-    if filesize > 8 * 1024 * 1024:
-        raise ValidationError("The maximum file size that can be uploaded is 8MB")
+    try:
+        kind = filetype.guess(file)
+        if filesize > 8 * 1024 * 1024:
+            raise ValidationError("The maximum file size that can be uploaded is 8MB")
+        if not kind:
+            raise ValidationError("Unsupported file type.")
+        if kind.mime not in valid_mime_types:
+            raise ValidationError("Unsupported file type.")
+        if kind.extension not in valid_file_extensions:
+            raise ValidationError("Unacceptable file extension.")
+    except TypeError as e:
+        print(e)
+        raise ValidationError("Unsupported file type.")
