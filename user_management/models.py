@@ -20,7 +20,7 @@ class User(AbstractUser, BaseModel):
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     role = models.CharField(max_length=50, default="intern", choices=USER_ROLES)
-    secret = models.CharField(max_length=16, default=random_base32)
+    secret = models.CharField(max_length=64, default=random_base32)
 
     def __str__(self):
         return f"User - {self.email} {self.id}"
