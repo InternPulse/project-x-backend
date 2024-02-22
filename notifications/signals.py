@@ -14,7 +14,7 @@ def send_welcome_email(sender, instance, created, **kwargs):
         sender_name = "InternPulse"
         sender_email = os.environ.get("EMAIL_SENDER")
         reply_to_email = os.environ.get("REPLY_TO_EMAIL")
-
+#
         html_content = f"""
                 <html>
                 <body>
