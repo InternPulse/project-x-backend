@@ -31,5 +31,5 @@ urlpatterns = [
     path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
     path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
     path('api/v1/', include('cohort_management.urls')),  # Include cohort management URLs
-    path('cert/', include('certificates.urls')),  # Include certificate URLs
+    path('api/v1/', include('certificates.urls')),  # Include certificate URLs
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
