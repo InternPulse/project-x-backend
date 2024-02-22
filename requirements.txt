@@ -12,6 +12,7 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 drf-yasg==1.21.7
 filetype==1.2.0
+gunicorn==21.2.0
 idna==3.6
 inflection==0.5.1
 mysqlclient==2.2.4
@@ -23,6 +24,7 @@ PyJWT==2.8.0
 PyMySQL==1.1.0
 pyotp==2.9.0
 python-decouple==3.8
+python-magic-bin==0.4.14
 python3-openid==3.2.0
 pytz==2024.1
 PyYAML==6.0.1
@@ -31,3 +33,4 @@ requests-oauthlib==1.3.1
 sqlparse==0.4.4
 uritemplate==4.1.1
 urllib3==2.2.1
+whitenoise==6.6.0
