@@ -39,16 +39,16 @@ urlpatterns = [
     ),  # Include cohort management URLs
     path("api/v1/", include("certificates.urls")),  # Include certificate URLs
     path(
-        "api/v1/payment/", include("paymentintergration.urls")
+        "api/v1/", include("paymentintergration.urls")
     ),  # Adjusted URL for payment integration
     path(
-        "api/v1/user/", include("user_management.urls")
+        "api/v1/", include("user_management.urls")
     ),  # Adjusted URL for user management
     path(
-        "api/v1/cohort/", include("cohort_management.urls")
+        "api/v1/", include("cohort_management.urls")
     ),  # Adjusted URL for cohort management
     path(
-        "api/v1/certificates/", include("certificates.urls")
+        "api/v1/", include("certificates.urls")
     ),  # Adjusted URL for certificates
     path(
         "api/v1/", include("notifications.urls")
