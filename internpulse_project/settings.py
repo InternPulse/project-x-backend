@@ -18,14 +18,18 @@ from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("DJANGO_SECRET_KEY")
+PAYSTACK_SECRET_KEY = config("Test_Secret_Key")
+PAYSTACK_PUBLIC_KEY = config("Test_Public_Key")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -33,6 +37,7 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
+    "internpulse-api-hd6sz.ondigitalocean.app"
 ]
 
 # Application definition
@@ -53,6 +58,8 @@ INSTALLED_APPS = [
     "user_management",
     "notifications",
     "cohort_management",
+    "paymentintergration",
+    "certificates",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -70,6 +77,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "internpulse_project.urls"
@@ -97,9 +105,18 @@ WSGI_APPLICATION = "internpulse_project.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config("DB_PASSWORD"),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
+    },
+    'test': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    
     }
 }
 
@@ -137,6 +154,7 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "REFRESH_TOKEN_CLASSES": ("user_management.MyRefreshToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
     "JTI_CLAIM": "jti",
 }
@@ -196,7 +214,14 @@ AUTH_USER_MODEL = "user_management.User"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+STATICFILES_STORAGE= "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+STATIC_ROOT='static'
+
 STATIC_URL = "static/"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -215,3 +240,5 @@ REST_AUTH = {
     "JWT_SERIALIZER": "user_management.serializers.SocialLoginSerializer"
 
 }
+
+FE_URL =  "https://localhost:5173"

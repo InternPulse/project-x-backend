@@ -1,5 +1,6 @@
 """All serializers for the views involved in the authentication and account management process"""
-
+from typing import Any, Dict
+import jwt
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
 from django.db.utils import IntegrityError
@@ -12,11 +13,10 @@ from rest_framework.serializers import (
     ModelSerializer,
     Serializer,
     SerializerMethodField,
-    ValidationError,
+    ValidationError
 )
 from rest_framework.validators import UniqueValidator
-from rest_framework_simplejwt.tokens import RefreshToken
-
+from .models import MyRefreshToken
 from utils import validators as v
 from utils.types import AuthUser
 
@@ -25,11 +25,11 @@ from .models import Profile
 User = get_user_model()
 
 
-class CustomLoginSerializer(Serializer):
+class CustomLoginSerializer(v.SerializerErrorMixin, Serializer):
     """A custom login serializer method that uses email or username to login"""
 
-    email = CharField(validators=[v.validate_name])
-    password = CharField(validators=[v.validate_password])
+    email = EmailField(required=True)
+    password = CharField(validators=[v.validate_password], required=True)
 
     def validate(self, attrs: dict) -> dict:
         email = attrs.get("email")
@@ -41,26 +41,49 @@ class CustomLoginSerializer(Serializer):
                 refresh = self.get_token(user)
                 result["refresh"] = str(refresh)
                 result["access"] = str(refresh.access_token)
+                result["sub"] = str(user.id)
+
+                decoded_token = jwt.decode(result["access"], options={"verify_signature": False})
+                result["iat"] = decoded_token.get("iat")
+                result["expiry"] = decoded_token.get("exp")
                 update_last_login(None, user)
-                return result
+                return v.get_response(200, "Login successful", result)
             else:
-                raise ValidationError("Invalid email/username or password")
-        else:
-            raise ValidationError('Must include "email" and "password".')
+                raise v.RestValidationError(
+                    "Invalid email or password",
+                    {"signup": ["Invalid email or password"]},
+                    success=False,
+                    status=409,
+                )
 
     @classmethod
     def get_token(cls, user: AuthUser) -> Token:
-        return RefreshToken.for_user(user)
+        return MyRefreshToken.for_user(user)
 
 
-class SignUpSerializer(ModelSerializer):
+class CustomLogoutSerializer(v.SerializerErrorMixin, Serializer):
+    refresh = CharField(write_only=True)
+    token_class = MyRefreshToken
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[Any, Any]:
+        try:
+            refresh = self.token_class(attrs["refresh"])
+            refresh.check_blacklist()
+        except Exception as e:
+            raise ValidationError({"refresh": [e]})
+        try:
+            refresh.blacklist()
+        except AttributeError:
+            pass
+        return {}
+class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
     """Custom signup serializer. It contains only fields that I can get from
     a google authentication and must be changed by a secure link"""
 
-    email = EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
-    first_name = CharField(validators=[v.validate_name])
-    last_name = CharField(validators=[v.validate_name])
-    password = CharField(validators=[v.validate_password])
+    email = EmailField(validators=[UniqueValidator(queryset=User.objects.all())], required=True)
+    first_name = CharField(validators=[v.validate_name], required=True)
+    last_name = CharField(validators=[v.validate_name], required=True)
+    password = CharField(validators=[v.validate_password], required=True)
 
     class Meta:
         model = User
@@ -77,9 +100,19 @@ class SignUpSerializer(ModelSerializer):
             user.save()
         except IntegrityError as e:
             if "email" in str(e):
-                raise ValidationError("User with this email already exists")
+                raise v.RestValidationError(
+                    "Duplicate user entry",
+                    {"email": ["A user with this email already exists"]},
+                    success=False,
+                    status=409,
+                )
             else:
-                raise ValidationError("Invalid data")
+                raise v.RestValidationError(
+                    "Signing up failed",
+                    {"user": ["Something went wrong please try again later"]},
+                    success=False,
+                    status=500,
+                )
         return user
 
 
@@ -107,7 +140,7 @@ class ProfileManageSerializer(ModelSerializer):
         ]
 
 
-class UserManageSerializer(ModelSerializer):
+class UserManageSerializer(v.SerializerErrorMixin, ModelSerializer):
     """Serializer for modifying your user information."""
 
     email = EmailField(
@@ -139,9 +172,19 @@ class UserManageSerializer(ModelSerializer):
             return super().update(instance, validated_data)
         except IntegrityError as e:
             if "email" in str(e):
-                raise ValidationError("A user with this email already exists")
+                raise v.RestValidationError(
+                    "Duplicate user entry",
+                    {"email": ["A user with this email already exists"]},
+                    success=False,
+                    status=409,
+                )
             else:
-                raise ValidationError("Invalid data")
+                raise v.RestValidationError(
+                    "User update failed",
+                    {"user": ["Something went wrong please try again later"]},
+                    success=False,
+                    status=500,
+                )
 
     def get_profile(self, obj):
         if hasattr(obj, "profile"):
@@ -150,11 +193,11 @@ class UserManageSerializer(ModelSerializer):
             return {}
 
 
-class RequestSerializer(Serializer):
+class RequestSerializer(v.SerializerErrorMixin, Serializer):
     email = EmailField()
 
 
-class PasswordResetSerializer(Serializer):
+class PasswordResetSerializer(v.SerializerErrorMixin, Serializer):
     password = CharField(validators=[v.validate_password])
     confirm_password = CharField(validators=[v.validate_password])
 
@@ -163,7 +206,7 @@ class EmptySerializer(Serializer):
     pass
 
 
-class OTPSerializer(Serializer):
+class OTPSerializer(v.SerializerErrorMixin, Serializer):
     otp = CharField(validators=[v.validate_otp], required=False)
     link = CharField(required=False)
     email = EmailField(required=False)
@@ -174,10 +217,16 @@ class OTPSerializer(Serializer):
         email = data.get("email")
 
         if token is None and (otp is None or email is None):
-            raise ValidationError("Either link or both otp and email must be provided")
-        return data
+            raise v.RestValidationError(
+                "Either link or both otp and email must be provided",
+                {
+                    "otp": ["An otp and email must be provided or a token must be provided"]
+                },
+                success=False
+                )
 
-class SocialLoginSerializer(ModelSerializer):
+
+class SocialLoginSerializer(v.SerializerErrorMixin, ModelSerializer):
     access = CharField()
     refresh = CharField()
 

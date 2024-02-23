@@ -5,8 +5,10 @@ from django.db import models
 from pyotp import random_base32
 
 from utils.models import BaseModel
-
-
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+from rest_framework.serializers import ValidationError
 class User(AbstractUser, BaseModel):
     """Custom user model"""
 
@@ -20,7 +22,7 @@ class User(AbstractUser, BaseModel):
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     role = models.CharField(max_length=50, default="intern", choices=USER_ROLES)
-    secret = models.CharField(max_length=16, default=random_base32)
+    secret = models.CharField(max_length=100, default=random_base32)
 
     def __str__(self):
         return f"User - {self.email} {self.id}"
@@ -65,3 +67,15 @@ class Profile(BaseModel):
 
     class Meta:
         abstract = False
+
+
+class MyRefreshToken(RefreshToken):
+    def check_blacklist(self) -> None:
+        """
+        Checks if this token is present in the token blacklist.  Raises
+        `TokenError` if so.
+        """
+        jti = self.payload[api_settings.JTI_CLAIM]
+
+        if BlacklistedToken.objects.filter(token__jti=jti).exists():
+            raise Exception("Token is blacklisted")
