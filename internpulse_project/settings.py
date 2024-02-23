@@ -15,15 +15,18 @@ from pathlib import Path
 
 from decouple import config
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("DJANGO_SECRET_KEY")
+PAYSTACK_SECRET_KEY = config("Test_Secret_Key")
+PAYSTACK_PUBLIC_KEY = config("Test_Public_Key")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -55,6 +58,7 @@ INSTALLED_APPS = [
     "user_management",
     "notifications",
     "cohort_management",
+    "paymentintergration",
     "certificates",
     "allauth",
     "allauth.account",
@@ -99,8 +103,6 @@ WSGI_APPLICATION = "internpulse_project.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-
 
 DATABASES = {
     'default': {
