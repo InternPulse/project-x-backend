@@ -5,10 +5,10 @@ from .views import CertificateListCreateAPIView, CertificateDetailAPIView, Certi
 #app_name = "certificates"
 
 urlpatterns = [
-    path("", CertificateListCreateAPIView.as_view(), name="certificate-list-create"),
-    path("<int:pk>/", CertificateDetailAPIView.as_view(), name="certificate-detail"),
+    path("certificates/", CertificateListCreateAPIView.as_view(), name="certificate-list-create"),
+    path("certificates/<int:pk>/", CertificateDetailAPIView.as_view(), name="certificate-detail"),
     path(
-        "issue-batch/",
+        "certificates/issue-batch/",
         CertificateIssueBatchAPIView.as_view(),
         name="certificate-issue-batch",
     ),
