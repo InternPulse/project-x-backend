@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-
+from utils.validators import validate_phone
 from utils.models import BaseModel
 
 # Create your models here.
@@ -27,7 +27,7 @@ class PaymentTicket(BaseModel):
             ("PENDING", "Pending"),
             ("SUCCESSFUL", "Successful"),
         ],
-        max_length=50,
+        max_length=50, default="PENDING"
     )
     account_number = models.CharField(null=False, max_length=50)
     account_owner = models.CharField(null=False, max_length=11)
@@ -47,7 +47,7 @@ class DefermentTicket(BaseModel):
             ("PENDING", "Pending"),
             ("APPROVED", "Approved"),
         ],
-        max_length=50,
+        max_length=50, default="PENDING"
     )
 
 
@@ -59,7 +59,7 @@ class TalentRequestTicket(BaseModel):
     state = models.CharField(null=False, max_length=50)
     city = models.CharField(null=False, max_length=50)
     zipcode = models.CharField(null=False, max_length=50)
-    phone_number = models.CharField(null=False, max_length=50)
+    phone_number = models.CharField(null=False, max_length=50, validators=[validate_phone])
     talent_count = models.IntegerField(null=False)
 
     def __str__(self) -> str:

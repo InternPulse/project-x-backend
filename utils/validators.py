@@ -141,7 +141,7 @@ def validate_otp(otp: str) -> bool:
 def validate_phone(phone: str) -> bool:
     phone_regex = r"^\+\d{1,4}\s\d{1,14}$"
     if len(phone) > 20:
-        raise ValidationError("Phone number must be less that 20 digits long")
+        raise ValidationError("Phone number must be less than 20 digits long")
     if not re.match(phone_regex, phone):
         raise ValidationError("Phone number must be in the format +234 1234567890")
 

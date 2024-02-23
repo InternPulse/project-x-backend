@@ -18,19 +18,39 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 urlpatterns = [
-    path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('admin/', admin.site.urls),
+    path("", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path(
+        "api/v1/swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    path("admin/", admin.site.urls),
     path("~redirect/", UserRedirectView.as_view(), name="redirect"),
     # path("api/v1/", include('allauth.urls')), # We're not using the google login so disabled for now
-    path('api/v1/', include('user_management.urls')),
-    path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
-    path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
-    path('api/v1/', include('cohort_management.urls')),  # Include cohort management URLs
-    path('api/v1/', include('certificates.urls')),  # Include certificate URLs
-    path('api/v1/payment/', include('paymentintergration.urls')),  # Adjusted URL for payment integration
-    path('api/v1/user/', include('user_management.urls')),  # Adjusted URL for user management
-    path('api/v1/cohort/', include('cohort_management.urls')),  # Adjusted URL for cohort management
-    path('api/v1/certificates/', include('certificates.urls')),  # Adjusted URL for certificates
-
+    path("api/v1/", include("user_management.urls")),
+    path(
+        "api/v1/", include("cohort_management.urls")
+    ),  # Include cohort_management URLs
+    path(
+        "api/v1/", include("cohort_management.urls")
+    ),  # Include cohort_management URLs
+    path(
+        "api/v1/", include("cohort_management.urls")
+    ),  # Include cohort management URLs
+    path("api/v1/", include("certificates.urls")),  # Include certificate URLs
+    path(
+        "api/v1/payment/", include("paymentintergration.urls")
+    ),  # Adjusted URL for payment integration
+    path(
+        "api/v1/user/", include("user_management.urls")
+    ),  # Adjusted URL for user management
+    path(
+        "api/v1/cohort/", include("cohort_management.urls")
+    ),  # Adjusted URL for cohort management
+    path(
+        "api/v1/", include("certificates.urls")
+    ),  # Adjusted URL for certificates
+    path(
+        "api/v1/", include("notifications.urls")
+    ),  # URL for notifications
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
