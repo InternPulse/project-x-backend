@@ -24,6 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("DJANGO_SECRET_KEY")
+PAYSTACK_SECRET_KEY = config("Test_Secret_Key")
+PAYSTACK_PUBLIC_KEY = config("Test_Public_Key")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
