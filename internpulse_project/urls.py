@@ -48,7 +48,7 @@ urlpatterns = [
         "api/v1/cohort/", include("cohort_management.urls")
     ),  # Adjusted URL for cohort management
     path(
-        "api/v1/certificates/", include("certificates.urls")
+        "api/v1/", include("certificates.urls")
     ),  # Adjusted URL for certificates
     path(
         "api/v1/", include("notifications.urls")
