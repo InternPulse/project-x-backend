@@ -5,6 +5,9 @@ Each module or app will have their own URL configuration, and the main project w
 
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
+
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -29,4 +32,5 @@ urlpatterns = [
     path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
     path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
     path('api/v1/', include('cohort_management.urls')),  # Include cohort management URLs
-]
+    path('api/v1/', include('certificates.urls')),  # Include certificate URLs
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
