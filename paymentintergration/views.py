@@ -2,12 +2,11 @@ import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate
-from .serializers import UserSerializer
 from rest_framework.decorators import api_view
+from django.contrib.auth import authenticate
 from django.conf import settings
-from .models import Wallet , PaymentTransaction
-from .serializers import WalletSerializer, DepositSerializer
+from .models import Wallet, PaymentTransaction
+from .serializers import UserSerializer, WalletSerializer, DepositSerializer
 
 
 class Login(APIView):
@@ -20,7 +19,9 @@ class Login(APIView):
         if user:
             return Response({"token": user.auth_token.key, "username": username})
         else:
-            return Response({"error": "Wrong Credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Wrong Credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class Register(APIView):
@@ -35,29 +36,22 @@ class Register(APIView):
 
         return Response(serializer.data)
 
-class UserAPI(APIView):
-    def get(self, request):
-        user = self.request.user
-
-
-        class WalletInfo(APIView):
 
 class WalletInfo(APIView):
-      def get(self, request):
-          wallet = Wallet.objects.get(user=request.user)
-          data = WalletSerializer(wallet).data
-          return Response(data)
+    def get(self, request):
+        wallet = Wallet.objects.get(user=request.user)
+        data = WalletSerializer(wallet).data
+        return Response(data)
 
 
 class DepositFunds(APIView):
-
     def post(self, request):
-        serializer = DepositSerializer(
-            data=request.data, context={"request": request})
+        serializer = DepositSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
         resp = serializer.save()
         return Response(resp)
+
 
 class VerifyDeposit(APIView):
     def get(self, request, reference):

@@ -1,11 +1,12 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils import timezone
+from utils.models import BaseModel
 
 # Create your models here.
+User = get_user_model() 
 
-
-class Wallet(models.Model):
+class Wallet(BaseModel):
     user = models.OneToOneField(
         User, null=True, on_delete=models.CASCADE)
     currency = models.CharField(max_length=50, default='NGN')
@@ -15,7 +16,7 @@ class Wallet(models.Model):
     def __str__(self):
         return self.user.__str__()
 
-class PaymentTransaction(models.Model):
+class PaymentTransaction(BaseModel):
 
     TRANSACTION_TYPES = (
         ('deposit', 'deposit'),
