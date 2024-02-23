@@ -100,13 +100,6 @@ WSGI_APPLICATION = "internpulse_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
-
 
 
 DATABASES = {
@@ -117,6 +110,11 @@ DATABASES = {
         'PASSWORD': config("DB_PASSWORD"),
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT'),
+    },
+    'test': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    
     }
 }
 
@@ -154,6 +152,7 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "REFRESH_TOKEN_CLASSES": ("user_management.MyRefreshToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
     "JTI_CLAIM": "jti",
 }
@@ -239,3 +238,5 @@ REST_AUTH = {
     "JWT_SERIALIZER": "user_management.serializers.SocialLoginSerializer"
 
 }
+
+FE_URL =  "https://localhost:5173"

@@ -26,7 +26,7 @@ urlpatterns = [
     path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path("~redirect/", UserRedirectView.as_view(), name="redirect"),
-    path("api/v1/", include('allauth.urls')),
+    # path("api/v1/", include('allauth.urls')), # We're not using the google login so disabled for now
     path('api/v1/', include('user_management.urls')),
     path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
     path('api/v1/', include('cohort_management.urls')),  # Include cohort_management URLs
