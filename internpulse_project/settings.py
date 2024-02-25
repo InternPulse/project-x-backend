@@ -29,7 +29,7 @@ PAYSTACK_PUBLIC_KEY = config("Test_Public_Key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -105,15 +105,15 @@ WSGI_APPLICATION = "internpulse_project.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': config('DB_NAME'),
+    #     'USER': config('DB_USER'),
+    #     'PASSWORD': config("DB_PASSWORD"),
+    #     'HOST': config('DB_HOST'),
+    #     'PORT': config('DB_PORT'),
+    # },test
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config("DB_PASSWORD"),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
-    },
-    'test': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     

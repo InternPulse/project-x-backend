@@ -12,7 +12,6 @@ django-cors-headers==4.3.1
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 drf-yasg==1.21.7
-filetype==1.2.0
 filelock==3.13.1
 filetype==1.2.0
 gunicorn==21.2.0
