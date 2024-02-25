@@ -2,7 +2,7 @@ from django.urls import path
 from .views import CertificateListCreateAPIView, CertificateDetailAPIView, CertificateIssueBatchAPIView
 
 
-#app_name = "certificates"
+app_name = "certificates"
 
 urlpatterns = [
     path("certificates/", CertificateListCreateAPIView.as_view(), name="certificate-list-create"),
