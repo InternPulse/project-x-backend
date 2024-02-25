@@ -2,8 +2,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .utils import send_email
 from django.contrib.auth import get_user_model
-from rest_framework.response import Response
-from rest_framework import status
 from decouple import config
 from .models import TalentRequestTicket, PaymentTicket, DefermentTicket
 
@@ -38,18 +36,9 @@ def send_welcome_email(sender, instance, created, **kwargs):
             reply_to={"email": reply_to_email},
             html_content=html_content,
         )
-        if sent_email == "Success":
-            response_data = {
-                "message": f"Enter the OTP that has been sent to {instance.email}. Please check your inbox or spam folder.",
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            response_data = {
-                "message": "Failed to send email. Please try again later.",
-            }
+        if not sent_email == "Success":        
             instance.delete()
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    
 
 @receiver(post_save, sender=TalentRequestTicket)
 def send_talent_email(sender, instance, created, **kwargs):
@@ -82,16 +71,7 @@ def send_talent_email(sender, instance, created, **kwargs):
             reply_to={"email": reply_to_email},
             html_content=html_content,
         )
-        if sent_email == "Success":
-            response_data = {
-                "message": f"A confirmation email has been sent to {instance.company_mail}. Please check your inbox or spam folder.",
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        else:
-            response_data = {
-                "message": "Failed to send email. Please try again later.",
-            }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
         
 @receiver(post_save, sender=PaymentTicket)
 def send_payment_email(sender, instance, created, **kwargs):
@@ -129,18 +109,6 @@ def send_payment_email(sender, instance, created, **kwargs):
             html_content=html_content,
         )
 
-        if sent_email == "Success":
-            response_data = {
-                "message": f"A message concerning the status of your transaction has been sent to {instance.sender_id.email}. Please check your inbox or spam folder.",
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        else:
-            response_data = {
-                "message": "Failed to send email. Please try again later.",
-            }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @receiver(post_save, sender=DefermentTicket)
 def send_payment_email(sender, instance, created, **kwargs):
     if created:  
@@ -171,13 +139,4 @@ def send_payment_email(sender, instance, created, **kwargs):
             html_content=html_content,
         )
 
-        if sent_email == "Success":
-            response_data = {
-                "message": f"A message concerning the status of your deferment has been sent to {instance.sender_id.email}. Please check your inbox or spam folder.",
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        else:
-            response_data = {
-                "message": "Failed to send email. Please try again later.",
-            }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       

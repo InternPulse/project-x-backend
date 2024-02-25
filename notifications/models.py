@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from utils.validators import validate_phone
+from .utils import validate_website
 from utils.models import BaseModel
 
 # Create your models here.
@@ -52,15 +52,12 @@ class DefermentTicket(BaseModel):
 
 
 class TalentRequestTicket(BaseModel):
-    company_name = models.CharField(null=False, max_length=50)
-    company_mail = models.EmailField(null=False, unique=False)
-    company_address = models.CharField(null=False, max_length=50)
-    country = models.CharField(null=False, max_length=50)
-    state = models.CharField(null=False, max_length=50)
-    city = models.CharField(null=False, max_length=50)
-    zipcode = models.CharField(null=False, max_length=50)
-    phone_number = models.CharField(null=False, max_length=50, validators=[validate_phone])
-    talent_count = models.IntegerField(null=False)
+    company_name = models.CharField(null=False, max_length=50, default="")
+    company_mail = models.EmailField(null=False, unique=False, default="")
+    company_website = models.CharField(null=False, max_length=50, validators=[validate_website], default="")
+    company_requirements = models.TextField(null=False, max_length=1000, default="")
+    job_position = models.CharField(null=False, max_length=50, default="")
+    proposed_salary = models.DecimalField(max_digits=10, decimal_places=2, null=False, default=0.00)
 
     def __str__(self) -> str:
         return self.company_name
