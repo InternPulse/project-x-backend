@@ -35,7 +35,6 @@ class CertificateIssueBatchAPIView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         intern_ids = serializer.validated_data.get('intern_ids')
-        print(intern_ids)
         cohort_id = serializer.validated_data.get('cohort_id')
         certificate_id = serializer.validated_data.get('certificate_id')
 
