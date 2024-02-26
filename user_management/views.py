@@ -25,7 +25,6 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
-from .models import MyRefreshToken
 from .pagination import CustomPagination
 from rest_framework_simplejwt.views import (
     TokenBlacklistView,
@@ -38,7 +37,8 @@ from utils.otp import generate_otp_link, get_otp, verify_otp, verify_otp_link
 from utils.validators import RestValidationError, get_response, ViewErrorMixin
 
 from .backends import CustomJWTAuthentication
-from .models import BLToken, Profile
+from .models import BLToken, Profile, MyRefreshToken, Questionnaire
+from .signals import password_reset, verification
 from .serializers import (
     CustomLoginSerializer,
     CustomLogoutSerializer,
@@ -79,14 +79,6 @@ class SignupView(ViewErrorMixin, CreateAPIView):
 
     def perform_create(self, serializer) -> Response:
         user = serializer.save()
-
-        if user:
-            # token = generate_otp_link(user.id, 'vyf')
-            # link = f"{settings.FE_URL}/activate/{token}"
-            # print(link)
-            print(
-                "User created with otp", get_otp(user)
-            )  # Replace with code for emailing otp
         refresh = MyRefreshToken.for_user(user)
         result = {}
         result["refresh"] = str(refresh)
@@ -135,10 +127,7 @@ class PasswordResetRequestView(ViewErrorMixin, GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         user = get_obj_or_rest_error(User, "user", email=email)
-        token = generate_otp_link(user.id, "pwd")
-        link = f"{settings.FE_URL}/password-reset/{token}"
-        print(link)
-        sent = True  # Replace with code for emailing
+        sent = password_reset.send(sender=__name__, user=user)
         if sent:
             return Response(
                 get_response(
@@ -200,10 +189,7 @@ class RequestVerificationView(ViewErrorMixin, GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         user = get_obj_or_rest_error(User, "user", email=email)
-        token = generate_otp_link(user.id, "vyf")
-        link = f"{settings.FE_URL}/activate/{token}"
-        print(link)
-        sent = True  # Replace with code for emailing
+        sent = verification.send(sender=__name__, user=user)
         if sent:
             return Response(
                 get_response(
@@ -272,6 +258,7 @@ class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
             ),
             status=HTTP_200_OK,
         )
+
 
 
 class UserView(ViewErrorMixin, GenericAPIView):
@@ -423,6 +410,7 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 class QuestionnaireView(ViewErrorMixin, CreateAPIView):
+    """Submit a new response to the questionnaire"""
     permission_classes = [AllowAny]
     serializer_class = QuestionnaireSerializer
 
@@ -433,8 +421,7 @@ class QuestionnaireGetView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         id = self.kwargs.get('id')
-        return get_object_or_rest_error(Questionnaire, "questionnaire" id=id)
-
+        return get_obj_or_rest_error(Questionnaire, "questionnaire", id=id)
 
 class QuestionnaireListView(ViewErrorMixin, ListAPIView):
     permission_classes = [IsAdminPermission]

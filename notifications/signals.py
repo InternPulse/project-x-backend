@@ -4,6 +4,8 @@ from .utils import send_email
 from django.contrib.auth import get_user_model
 from decouple import config
 from .models import TalentRequestTicket, PaymentTicket, DefermentTicket
+from user_management.signals import password_reset, verification
+import utils.otp as u
 
 User = get_user_model()
 
@@ -17,16 +19,16 @@ def send_welcome_email(sender, instance, created, **kwargs):
         html_content = f"""
                 <html>
                 <body>
-                        <h3>Welcome, {instance.username}!</h3>
+                        <h3>Welcome, {instance.full_name}!</h3>
                         <p>You are Almost There! Kindly enter the OTP below to validate your email.</p>
-                        <strong>{instance.secret}</strong>
+                        <strong>{u.get_otp(instance)}</strong>
                 </body>
                 </html>
             """
         to = [
             {
                 "email": instance.email,
-                "name": instance.username,
+                "name": instance.full_name,
             }
         ]
         sent_email = send_email(
@@ -93,13 +95,13 @@ def send_payment_email(sender, instance, created, **kwargs):
         html_content = f"""
             <html>
             <body>
-                <h3>Hello, {instance.sender_id.username}!</h3>
+                <h3>Hello, {instance.sender_id.full_name}!</h3>
                 <p>{message}</p>
             </body>
             </html>
         """
 
-        to = [{"email": instance.sender_id.email, "name": instance.sender_id.username}]
+        to = [{"email": instance.sender_id.email, "name": instance.sender_id.full_name}]
 
         sent_email = send_email(
             to=to,
@@ -123,13 +125,13 @@ def send_payment_email(sender, instance, created, **kwargs):
         html_content = f"""
             <html>
             <body>
-                <h3>Hello, {instance.sender_id.username}!</h3>
+                <h3>Hello, {instance.sender_id.full_name}!</h3>
                 <p>{message}</p>
             </body>
             </html>
         """
 
-        to = [{"email": instance.sender_id.email, "name": instance.sender_id.username}]
+        to = [{"email": instance.sender_id.email, "name": instance.sender_id.full_name}]
 
         sent_email = send_email(
             to=to,
@@ -139,4 +141,76 @@ def send_payment_email(sender, instance, created, **kwargs):
             html_content=html_content,
         )
 
-       
+
+
+@receiver(password_reset)
+def password_reset_receiver(sender, **kwargs):
+    user = kwargs.get('user')
+    if user:
+        token = u.generate_otp_link(user.id, "pwd")
+        link = f"{settings.FE_URL}/password-reset/{token}"
+        subject = "Reset your password"
+        sender_name = "InternPulse"
+        sender_email = config("EMAIL_SENDER")
+        reply_to_email = config("REPLY_TO_EMAIL")
+        html_content = f"""
+                <html>
+                <body>
+                        <h3>Dear, {user.full_name}!</h3>
+                        <p>Click on the link below to reset your password.</p>
+                        <strong>{link}</strong>
+                        <p>Ignore this mail if you didn't request for one</p>
+
+                </body>
+                </html>
+            """
+        to = [
+            {
+                "email": user.email,
+                "name": user.full_name,
+            }
+        ]
+        sent_email = send_email(
+            to=to,
+            subject=subject,
+            sender={"name": sender_name, "email": sender_email},
+            reply_to={"email": reply_to_email},
+            html_content=html_content,
+        )
+    
+
+@receiver(verification)
+def verification_receiver(sender, **kwargs):
+    user = kwargs.get('user')
+    if user:
+        token = u.generate_otp_link(user.id, "vyf")
+        link = f"{settings.FE_URL}/activate/{token}"
+        subject = "Reset your password"
+        sender_name = "InternPulse"
+        sender_email = config("EMAIL_SENDER")
+        reply_to_email = config("REPLY_TO_EMAIL")
+        html_content = f"""
+                <html>
+                <body>
+                        <h3>Dear, {user.full_name}!</h3>
+                        <p>Click on the link below to reset your password.</p>
+                        <strong>{link}</strong>
+                        <p>Ignore this mail if you didn't request for one</p>
+
+                </body>
+                </html>
+            """
+        to = [
+            {
+                "email": user.email,
+                "name": user.full_name,
+            }
+        ]
+        sent_email = send_email(
+            to=to,
+            subject=subject,
+            sender={"name": sender_name, "email": sender_email},
+            reply_to={"email": reply_to_email},
+            html_content=html_content,
+        )
+    

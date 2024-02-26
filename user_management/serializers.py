@@ -15,6 +15,7 @@ from rest_framework.serializers import (
     Serializer,
     SerializerMethodField,
     ValidationError,
+    BooleanField
 )
 from rest_framework.validators import UniqueValidator
 from .models import MyRefreshToken
@@ -95,7 +96,7 @@ class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "first_name", "last_name", "password")
+        fields = ("email", "first_name", "last_name", "password", "questionnaire_id")
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data: dict) -> AuthUser:
@@ -103,10 +104,11 @@ class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
         try:
             password = validated_data.pop("password")
             validated_data["username"] = validated_data["email"]
+            questionnaire_id = validated_data.pop("questionnaire_id", None)
             user = User.objects.create(**validated_data)
             user.set_password(password)
             user.save()
-            if "questionnaire_id" in validated_data:
+            if questionnaire_id:
                 try:
                     questionnaire = Questionnaire.objects.get(id=int(questionnaire_id))
                     questionnaire.user = user
@@ -131,7 +133,7 @@ class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
         return user
 
 
-class ProfileManageSerializer(ModelSerializer):
+class ProfileManageSerializer(v.SerializerErrorMixin, ModelSerializer):
     """Serializer for modifying your profile"""
 
     address = CharField(required=False)
@@ -145,7 +147,7 @@ class ProfileManageSerializer(ModelSerializer):
     linkedin_url = CharField(validators=[v.validate_url], required=False)
     github_url = CharField(validators=[v.validate_url], required=False)
     x_url = CharField(validators=[v.validate_url], required=False)
-    occupation = CharField(validators=[v.validate_url], required=False)
+    occupation = CharField(max_length=100, required=False)
     can_share_PI = BooleanField(default=False, required=False)
 
     class Meta:
@@ -243,15 +245,8 @@ class OTPSerializer(v.SerializerErrorMixin, Serializer):
         email = data.get("email")
 
         if token is None and (otp is None or email is None):
-            raise v.RestValidationError(
-                "Either link or both otp and email must be provided",
-                {
-                    "otp": [
-                        "An otp and email must be provided or a token must be provided"
-                    ]
-                },
-                success=False,
-            )
+            raise ValidationError("Either link or both otp and email must be provided")
+        return data
 
 
 class SocialLoginSerializer(v.SerializerErrorMixin, ModelSerializer):
@@ -263,12 +258,13 @@ class SocialLoginSerializer(v.SerializerErrorMixin, ModelSerializer):
         fields = ["access", "refresh"]
 
 
-class QuestionnaireSerializer(ModelSerializer):
+class QuestionnaireSerializer(v.SerializerErrorMixin, ModelSerializer):
     has_experience_programming = BooleanField(default=False)
     worked_on_real_life_problems = BooleanField(default=False)
-    reason_for_joining_Internpulse = TextField(default="", blank=True)
-    importance_of_work_exp = TextField(required=True)
+    reason_for_joining_Internpulse = CharField(required=True)
+    importance_of_work_exp = CharField(required=True)
     user = SerializerMethodField()
+    id = CharField(read_only=True)
 
     class Meta:
         model = Questionnaire

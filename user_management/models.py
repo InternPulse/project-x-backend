@@ -75,14 +75,16 @@ class Profile(BaseModel):
         abstract = False
 
 class Questionnaire(BaseModel):
-    user = models.OnetoOneField(User, on_delete=models.CASCADE, related_name="profile", null=True)
+    """Questionnaire model"""
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="questionnaire_reply", null=True)
     has_experience_programming = models.BooleanField(default=False)
     worked_on_real_life_problems = models.BooleanField(default=False)
     reason_for_joining_Internpulse = models.TextField(default="", blank=True)
-    importance_of_work_exp = models.TextField(required=True)
+    importance_of_work_exp = models.TextField()
 
     def __str__(self):
-        return f"Survey filled by {self.email}"
+        return f"Survey filled by {self.user.full_name or 'anonymous'}"
     
     class Meta:
         abstract = False

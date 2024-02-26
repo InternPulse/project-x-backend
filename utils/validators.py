@@ -201,5 +201,5 @@ def validate_x(x: str):
 def validate_url(url: str):
     if len(url) > 150:
         raise ValidationError("Url must be less than 150 characters long")
-    if not url.startswith("https://") and not url.split('.') > 2:
+    if not url.startswith("https://") and not len(url.split('.')) > 2:
         raise ValidationError("Invalid url")
