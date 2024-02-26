@@ -51,7 +51,7 @@ def send_talent_email(sender, instance, created, **kwargs):
                 <html>
                 <body>
                         <h3>Hi there, {instance.company_name}!</h3>
-                        <p>We received your request for {instance.talent_count} interns. Please be patient, as your request
+                        <p>We received your request for our talented interns. Please be patient, as your request
                             is being considered. We'll get back to you shortly.
                         </p>
                         
