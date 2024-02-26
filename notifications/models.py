@@ -57,7 +57,7 @@ class TalentRequestTicket(BaseModel):
     company_website = models.CharField(null=False, max_length=50, validators=[validate_website])
     company_requirements = models.TextField(null=False, max_length=1000)
     job_position = models.CharField(null=False, max_length=50)
-    proposed_salary = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    proposed_salary = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=True)
 
     def __str__(self) -> str:
         return self.company_name
