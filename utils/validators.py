@@ -112,13 +112,13 @@ class ViewErrorMixin():
             403,
             success=False
         )
-def validate_name(name: str) -> bool:
+def validate_name(name: str):
     """Validates the name of a user"""
     if len(name) < 2 or len(name) > 50:
         raise ValidationError("Name should be between 2 and 50 characters")
 
 
-def validate_password(password: str) -> bool:
+def validate_password(password: str):
     """Validates the password of a user"""
     if not any(x.islower() for x in password):
         raise ValidationError("Password was contain at least one lower case letter")
@@ -130,7 +130,7 @@ def validate_password(password: str) -> bool:
         raise ValidationError("Password must have at least one letter")
 
 
-def validate_otp(otp: str) -> bool:
+def validate_otp(otp: str):
     """Validates the OTP of a user"""
     if len(otp) != settings.OTP["length"]:
         raise ValidationError(f"OTP must be {settings.OTP['length']} characters long")
@@ -138,7 +138,7 @@ def validate_otp(otp: str) -> bool:
         raise ValidationError("OTP must be a number")
 
 
-def validate_phone(phone: str) -> bool:
+def validate_phone(phone: str):
     phone_regex = r"^\+\d{1,4}\s\d{1,14}$"
     if len(phone) > 20:
         raise ValidationError("Phone number must be less that 20 digits long")
@@ -176,3 +176,29 @@ def get_response(status: int, message: str, data: Optional[Dict[str, any]] = {},
     }
     return response
 
+
+def validate_linkedin(linkedin: str):
+    linkedin_regex = r"^https:\/\/linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$"
+    if not re.match(linkedin_regex, linkedin):
+        raise ValidationError("Invalid linkedin url")
+    if len(linkedin) > 150:
+        raise ValidationError("Linkedin url must be less than 150 characters long")
+
+
+def validate_github(github: str):
+    # github_regex = r"^https:\/\/github\.com\/[a-zA-Z0-9-]+\/?$"
+    # if not re.match(github_regex, github):
+    #     raise ValidationError("Invalid github url")
+    if len(github) > 150:
+        raise ValidationError("Github url must be less than 150 characters long")
+
+
+def validate_x(x: str):
+    if len(x) > 150:
+        raise ValidationError("X url must be less than 150 characters long")
+
+def validate_url(url: str):
+    if len(url) > 150:
+        raise ValidationError("Url must be less than 150 characters long")
+    if not url.startswith("https://") and not url.split('.') > 2:
+        raise ValidationError("Invalid url")

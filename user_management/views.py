@@ -46,6 +46,7 @@ from .serializers import (
     OTPSerializer,
     PasswordResetSerializer,
     ProfileManageSerializer,
+    QuestionnaireSerializer,
     RequestSerializer,
     SignUpSerializer,
     UserManageSerializer,
@@ -352,30 +353,12 @@ class UserListView(ViewErrorMixin, ListAPIView):
     pagination_class = CustomPagination
     queryset = User.objects.all().order_by("id")
 
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.filter_queryset(self.get_queryset())
-
-    #     page = self.paginate_queryset(queryset)
-    #     if page is not None:
-    #         serializer = self.get_serializer(page, many=True)
-    #         return self.get_paginated_response(serializer.data)
-
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(
-    #         get_response(
-    #             HTTP_200_OK,
-    #             "User list",
-    #             serializer.data,
-    #         ),
-    #         status=HTTP_200_OK,
-    #     )
-
-
 class ProfileView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ProfileManageSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
+    allowed_methods = ["GET", "POST", "OPTIONS", "PATCH", "DELETE"]
     def get_object(self):
         return get_obj_or_rest_error(Profile, "profile", user=self.request.user)
 
@@ -390,14 +373,6 @@ class ProfileView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
                 serializer.data,
             ),
             status=HTTP_200_OK,
-        )
-
-    def put(self, request, *args, **kwargs):
-        raise RestValidationError(
-            "Method not allowed",
-            {"auth": ["You cannot perfnorm this operation"]},
-            success=False,
-            status=405,
         )
 
 
@@ -445,3 +420,25 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
     def get_redirect_url(self):
         return "redirect-url"
+
+
+class QuestionnaireView(ViewErrorMixin, CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = QuestionnaireSerializer
+
+class QuestionnaireGetView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminPermission]
+    serializer_class = QuestionnaireSerializer
+    allowed_methods = ["OPTIONS", "GET", "DELETE"]
+
+    def get_object(self):
+        id = self.kwargs.get('id')
+        return get_object_or_rest_error(Questionnaire, "questionnaire" id=id)
+
+
+class QuestionnaireListView(ViewErrorMixin, ListAPIView):
+    permission_classes = [IsAdminPermission]
+    serializer_class = QuestionnaireSerializer
+    pagination_class = CustomPagination
+    queryset = Questionnaire.objects.all().order_by("id")
+
