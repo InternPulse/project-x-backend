@@ -1,7 +1,7 @@
 """Utility validator function for """
 from typing import Dict, Optional
 from collections.abc import Mapping
-import filetype
+# import filetype
 import re
 from django.conf import settings
 from rest_framework.serializers import ValidationError
@@ -141,28 +141,29 @@ def validate_otp(otp: str):
 def validate_phone(phone: str):
     phone_regex = r"^\+\d{1,4}\s\d{1,14}$"
     if len(phone) > 20:
-        raise ValidationError("Phone number must be less that 20 digits long")
+        raise ValidationError("Phone number must be less than 20 digits long")
     if not re.match(phone_regex, phone):
         raise ValidationError("Phone number must be in the format +234 1234567890")
 
 
 def validate_image(file):
-    valid_mime_types = ["image/jpeg", "image/png"]
-    filesize = file.size
-    valid_file_extensions = [".png", ".jpg", ".jpeg"]
-    try:
-        kind = filetype.guess(file)
-        if filesize > 8 * 1024 * 1024:
-            raise ValidationError("The maximum file size that can be uploaded is 8MB")
-        if not kind:
-            raise ValidationError("Unsupported file type.")
-        if kind.mime not in valid_mime_types:
-            raise ValidationError("Unsupported file type.")
-        if kind.extension not in valid_file_extensions:
-            raise ValidationError("Unacceptable file extension.")
-    except TypeError as e:
-        print(e)
-        raise ValidationError("Unsupported file type.")
+    pass
+    # valid_mime_types = ["image/jpeg", "image/png"]
+    # filesize = file.size
+    # valid_file_extensions = [".png", ".jpg", ".jpeg"]
+    # try:
+    #     kind = filetype.guess(file)
+    #     if filesize > 8 * 1024 * 1024:
+    #         raise ValidationError("The maximum file size that can be uploaded is 8MB")
+    #     if not kind:
+    #         raise ValidationError("Unsupported file type.")
+    #     if kind.mime not in valid_mime_types:
+    #         raise ValidationError("Unsupported file type.")
+    #     if kind.extension not in valid_file_extensions:
+    #         raise ValidationError("Unacceptable file extension.")
+    # except TypeError as e:
+    #     print(e)
+    #     raise ValidationError("Unsupported file type.")
     
 
 def get_response(status: int, message: str, data: Optional[Dict[str, any]] = {}, errors: Optional[Dict[str, any]] = {}, success: Optional[bool] = True):

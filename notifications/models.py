@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-
+from .utils import validate_website
 from utils.models import BaseModel
 
 # Create your models here.
@@ -27,7 +27,7 @@ class PaymentTicket(BaseModel):
             ("PENDING", "Pending"),
             ("SUCCESSFUL", "Successful"),
         ],
-        max_length=50,
+        max_length=50, default="PENDING"
     )
     account_number = models.CharField(null=False, max_length=50)
     account_owner = models.CharField(null=False, max_length=11)
@@ -47,20 +47,17 @@ class DefermentTicket(BaseModel):
             ("PENDING", "Pending"),
             ("APPROVED", "Approved"),
         ],
-        max_length=50,
+        max_length=50, default="PENDING"
     )
 
 
 class TalentRequestTicket(BaseModel):
     company_name = models.CharField(null=False, max_length=50)
     company_mail = models.EmailField(null=False, unique=False)
-    company_address = models.CharField(null=False, max_length=50)
-    country = models.CharField(null=False, max_length=50)
-    state = models.CharField(null=False, max_length=50)
-    city = models.CharField(null=False, max_length=50)
-    zipcode = models.CharField(null=False, max_length=50)
-    phone_number = models.CharField(null=False, max_length=50)
-    talent_count = models.IntegerField(null=False)
+    company_website = models.CharField(null=False, max_length=50)
+    company_requirements = models.TextField(null=False, max_length=1000)
+    job_position = models.CharField(null=False, max_length=50)
+    proposed_salary = models.TextField(null=False, max_length=1000)
 
     def __str__(self) -> str:
         return self.company_name

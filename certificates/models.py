@@ -6,6 +6,7 @@ from utils.models import BaseModel
 
 # Create your models here.
 class Certificate(BaseModel):
+    cohort = models.CharField(max_length=100, unique=True, blank=True, null=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
     image = models.ImageField(upload_to="certificates/", blank=True, null=True)
