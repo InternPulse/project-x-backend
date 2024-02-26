@@ -31,18 +31,18 @@ class CertificateIssueBatchAPIViewTests(TestCase):
         # self.client.force_authenticate(user=self.user1)
 
     def test_certificate_list_create_endpoint(self):
-        url = reverse('certificates:certificate-list-create')
+        url = reverse('certificate-list-create')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
 
     def test_certificate_detail_endpoint(self):
         # Assuming you have at least one certificate in the database
         # certificate_id = Certificate.objects.first().id
-        url = reverse('certificates:certificate-detail', kwargs={'pk': 1})
+        url = reverse('certificate-detail', kwargs={'pk': 1})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
 
     def test_certificate_issue_batch_endpoint(self):
-        url = reverse('certificates:certificate-issue-batch')
+        url = reverse('certificate-issue-batch')
         response = self.client.post(url, {})  # Assuming an empty POST request is sufficient for testing
         self.assertEqual(response.status_code, 401)  # Assuming it returns a 400 for missing data
