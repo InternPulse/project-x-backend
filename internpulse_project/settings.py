@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "dj_rest_auth",
+    "reset_migrations"
 ]
 
 MIDDLEWARE = [
