@@ -26,7 +26,7 @@ class PaymentTransaction(BaseModel):
     wallet = models.ForeignKey(Wallet, null=True, on_delete=models.CASCADE)
     transaction_type = models.CharField(
         max_length=200, null=True,  choices=TRANSACTION_TYPES)
-    amount = models.DecimalField(max_digits=100, null=True, decimal_places=2)
+    amount = models.DecimalField(max_digits=65, null=True, decimal_places=2)
     timestamp = models.DateTimeField(default=timezone.now, null=True)
     status = models.CharField(max_length=100, default="pending")
     paystack_payment_reference = models.CharField(max_length=100, default='', blank=True)
