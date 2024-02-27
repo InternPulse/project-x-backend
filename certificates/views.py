@@ -12,64 +12,219 @@ from cohort_management.models import InternProfile, Cohort
 
 # Create your views here.
 class CertificateListCreateAPIView(generics.ListCreateAPIView):
+    """
+    A view to list all certificates and to create one.
+    """
+    serializer_class = CertificateSerializer
+    permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        return Certificate.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        """
+        Get a list of all certificates.
+
+        Returns:
+            Response: RESTful response with a list of certificates.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.serializer_class(queryset, many=True)
+        data = {
+            "status": status.HTTP_200_OK,
+            "success": True,
+            "message": "Certificates retrieved successfully",
+            "data": serializer.data
+        }
+        return Response(data)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Create a new certificate.
+
+        Args:
+            request: The request object.
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Response: RESTful response indicating the result of the create operation.
+        """
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            data = {
+                "status": status.HTTP_201_CREATED,
+                "success": True,
+                "message": "Certificate created successfully",
+                "data": serializer.data
+            }
+            return Response(data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CertificateDetailAPIView(generics.RetrieveAPIView):
+    """
+    A view to retrieve a cohort.
+
+    Allows unauthenticated and authenticated users to retrieve a certificate by its ID.
+    """
+    queryset = Certificate.objects.all()
+    serializer_class = CertificateSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieve a specific certificate.
+
+        Args:
+            request: The request object.
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Response: RESTful response with the retrieved certificate.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = {
+            "status": status.HTTP_200_OK,
+            "success": True,
+            "message": "Certificate retrieved successfully",
+            "data": serializer.data
+        }
+        return Response(data)
+
+
+class CertificateUpdateAPIView(generics.UpdateAPIView):
+    """
+    A view to update a certificate.
+
+    Allows only authenticated users to update a certificate by its ID.
+    """
     queryset = Certificate.objects.all()
     serializer_class = CertificateSerializer
     permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
 
+    def update(self, request, *args, **kwargs):
+        """
+        Update a specific certificate.
 
-class CertificateDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+        Args:
+            request: The request object.
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Response: RESTful response indicating the result of the update operation.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        data = {
+            "status": status.HTTP_200_OK,
+            "success": True,
+            "message": "Certificates updated successfully",
+            "data": serializer.data
+        }
+        return Response(data)
+
+
+class CertificateDestroyAPIView(generics.DestroyAPIView):
+    """
+    A view to delete a certificate.
+
+    Allows only authenticated users to delete a cohort by its ID.
+    """
     queryset = Certificate.objects.all()
     serializer_class = CertificateSerializer
     permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete a specific certificate.
+
+        Args:
+            request: The request object.
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Response: RESTful response indicating the result of the delete operation.
+        """
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        data = {
+            "status": status.HTTP_204_NO_CONTENT,
+            "success": True,
+            "message": "Certificate deleted successfully",
+            "deleted_certificate_id": instance.id  # Include the ID of the deleted certificate
+        }
+        return Response(data, status=status.HTTP_204_NO_CONTENT)
 
 
 class CertificateIssueBatchAPIView(generics.CreateAPIView):
+    """
+    A view to issue certificates in batch.
+
+    Allows only authenticated admin users to issue certificates to users by their IDs or cohort ID.
+    """
     serializer_class = CertificateIssueBatchSerializer
     permission_classes = [IsAdminUser]  # Authentication required
 
     def post(self, request):
-        context = {}
+        """
+        Issue certificates in batch to users.
+
+        Args:
+            request: The request object.
+
+        Returns:
+            Response: RESTful response indicating the result of the issued operation.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        intern_ids = serializer.validated_data.get('intern_ids')
+        intern_ids = serializer.validated_data.get('intern_profile_ids', [])
         cohort_id = serializer.validated_data.get('cohort_id')
-        certificate_id = serializer.validated_data.get('certificate_id')
 
-        if not intern_ids and not cohort_id and not certificate_id:
-            context['status'] = 'error'
-            context['message'] = 'Please provide intern_ids or cohort_id or certificate_id'
-            return Response(context, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            certificate = Certificate.objects.get(id=certificate_id)
-        except Certificate.DoesNotExist:
-            context['status'] = 'error'
-            context['message'] = 'Certificate does exist'
-            return Response(context, status=status.HTTP_404_NOT_FOUND)
+        if not intern_ids and not cohort_id:
+            data = {
+                "status": status.HTTP_400_BAD_REQUEST,
+                "success": False,
+                "message": "Please provide intern_ids or cohort_id"
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
         if cohort_id:
             try:
                 cohort = Cohort.objects.get(id=cohort_id)
             except Cohort.DoesNotExist:
-                context['status'] = 'error'
-                context['message'] = 'Cohort does exist'
-                return Response(context, status=status.HTTP_404_NOT_FOUND)
+                data = {
+                    "status": status.HTTP_204_NO_CONTENT,
+                    "success": False,
+                    "message": "Cohort does not exist"
+                }
+                return Response(data, status=status.HTTP_404_NOT_FOUND)
             interns = InternProfile.objects.filter(cohort=cohort)
         else:
             interns = InternProfile.objects.filter(id__in=intern_ids)
 
         certificates_issued = []
         for intern in interns:
-            intern.certificate_id = certificate
-            intern.save()
-            certificates_issued.append({
-                'intern_id': intern.id,
-                'certificate_id': certificate_id
-            })
-        
-        context['status'] = 'success'
-        context['certificates_issued'] = certificates_issued
-        return Response(context, status=status.HTTP_200_OK)
+            certificate = Certificate(user=intern.user, cohort=intern.cohort, is_issued=True)
+            certificate.save()
+            certificates_issued.append({'intern_id': intern.id, 'certificate_id': certificate.id})
+
+        data = {
+            "status": status.HTTP_200_OK,
+            "success": True,
+            "message": "Certificate issued successfully",
+            "certificates_issued": certificates_issued
+        }
+        return Response(data, status=status.HTTP_200_OK)

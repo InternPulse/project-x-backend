@@ -9,6 +9,5 @@ class CertificateSerializer(serializers.ModelSerializer):
 
 
 class CertificateIssueBatchSerializer(serializers.Serializer):
-    intern_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
+    intern_profile_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
     cohort_id = serializers.IntegerField(required=False)
-    certificate_id = serializers.IntegerField(required=False)

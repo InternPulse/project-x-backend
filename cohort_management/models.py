@@ -4,7 +4,6 @@ from django.db import models
 from user_management.models import User
 from utils.models import BaseModel
 
-from certificates.models import Certificate
 
 class Cohort(BaseModel):
     title = models.CharField(max_length=100)
@@ -13,12 +12,11 @@ class Cohort(BaseModel):
     start_date = models.DateField()
     end_date = models.DateField()
 
-
     def __str__(self):
         return self.title
 
 class InternProfile(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
     cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE, related_name='interns')
     role_choices = [
         ('Product designer', 'Product designer'),
@@ -27,10 +25,6 @@ class InternProfile(BaseModel):
         ('Product manager', 'Product manager'),
     ]
     role = models.CharField(max_length=50, choices=role_choices)
-    certificate_id = models.ForeignKey(Certificate,
-                                       related_name='user_certificate',
-                                       on_delete=models.DO_NOTHING,
-                                       blank=True, null=True)  # Reference to Certificate model
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
