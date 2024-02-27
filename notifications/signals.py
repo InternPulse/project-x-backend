@@ -12,7 +12,7 @@ User = get_user_model()
 
 @receiver(post_save, sender=User)
 def send_welcome_email(sender, instance, created, **kwargs):
-    if created:
+    if created and not (instance.is_staff and instance.is_superuser):
         subject = "Welcome to InternPulse!"
         sender_name = "InternPulse"
         sender_email = config("EMAIL_SENDER")
