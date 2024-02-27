@@ -1,10 +1,8 @@
 from rest_framework import generics
 from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework import status
 from rest_framework.response import Response
-
-from django.http import Http404
 
 from .models import Certificate
 from .serializers import CertificateSerializer, CertificateIssueBatchSerializer
@@ -16,21 +14,20 @@ from cohort_management.models import InternProfile, Cohort
 class CertificateListCreateAPIView(generics.ListCreateAPIView):
     queryset = Certificate.objects.all()
     serializer_class = CertificateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
 
 
 class CertificateDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Certificate.objects.all()
-    serializer_class = CertificateIssueBatchSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = CertificateSerializer
+    permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
 
 
 class CertificateIssueBatchAPIView(generics.CreateAPIView):
     serializer_class = CertificateIssueBatchSerializer
-    permission_classes = [IsAuthenticated]  # Authentication required
-    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAdminUser]  # Authentication required
 
     def post(self, request):
         context = {}
@@ -53,14 +50,13 @@ class CertificateIssueBatchAPIView(generics.CreateAPIView):
             context['message'] = 'Certificate does exist'
             return Response(context, status=status.HTTP_404_NOT_FOUND)
 
-        try:
-            cohort = Cohort.objects.get(id=cohort_id)
-        except Cohort.DoesNotExist:
-            context['status'] = 'error'
-            context['message'] = 'Cohort does exist'
-            return Response(context, status=status.HTTP_404_NOT_FOUND)
-
         if cohort_id:
+            try:
+                cohort = Cohort.objects.get(id=cohort_id)
+            except Cohort.DoesNotExist:
+                context['status'] = 'error'
+                context['message'] = 'Cohort does exist'
+                return Response(context, status=status.HTTP_404_NOT_FOUND)
             interns = InternProfile.objects.filter(cohort=cohort)
         else:
             interns = InternProfile.objects.filter(id__in=intern_ids)
