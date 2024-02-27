@@ -25,7 +25,8 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
-from .pagination import CustomPagination
+from .pagination import CustomPagination, UserFilter, QuestionnaireFilter
+from django_filters import rest_framework as filters
 from rest_framework_simplejwt.views import (
     TokenBlacklistView,
     TokenObtainPairView,
@@ -340,6 +341,8 @@ class UserListView(ViewErrorMixin, ListAPIView):
     serializer_class = UserManageSerializer
     pagination_class = CustomPagination
     queryset = User.objects.all().order_by("id")
+    filterset_class = UserFilter
+    filter_backends = [filters.DjangoFilterBackend]
 
 class ProfileView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ProfileManageSerializer
@@ -415,6 +418,7 @@ class QuestionnaireView(ViewErrorMixin, CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = QuestionnaireSerializer
 
+
 class QuestionnaireGetView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminPermission]
     serializer_class = QuestionnaireSerializer
@@ -429,4 +433,7 @@ class QuestionnaireListView(ViewErrorMixin, ListAPIView):
     serializer_class = QuestionnaireSerializer
     pagination_class = CustomPagination
     queryset = Questionnaire.objects.all().order_by("id")
+    filterset_class = QuestionnaireFilter
+    filter_backends = [filters.DjangoFilterBackend]
+
 
