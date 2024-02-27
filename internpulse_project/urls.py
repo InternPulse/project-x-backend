@@ -28,15 +28,7 @@ urlpatterns = [
     path("~redirect/", UserRedirectView.as_view(), name="redirect"),
     # path("api/v1/", include('allauth.urls')), # We're not using the google login so disabled for now
     path("api/v1/", include("user_management.urls")),
-    path(
-        "api/v1/", include("cohort_management.urls")
-    ),  # Include cohort_management URLs
-    path(
-        "api/v1/", include("cohort_management.urls")
-    ),  # Include cohort_management URLs
-    path(
-        "api/v1/", include("cohort_management.urls")
-    ),  # Include cohort management URLs
+
     path("api/v1/", include("certificates.urls")),  # Include certificate URLs
     path(
         "api/v1/", include("paymentintergration.urls")

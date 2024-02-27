@@ -42,11 +42,10 @@ class CohortSerializer(serializers.ModelSerializer):
     This serializer handles the conversion of Cohort model instances to JSON format and vice versa.
     """
 
-    interns = InternProfileSerializer(many=True, read_only=True)
-    
     class Meta:
         model = Cohort
-        fields = '__all__'
+        fields = ['id', 'title', 'description', 'start_date', 'end_date', 'created_at', 'updated_at']
+
 
     def validate_title(self, value):
         """
