@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "notifications",
     "cohort_management",
     "paymentintergration",
+    "paystack",
     "certificates",
     "allauth",
     "allauth.account",
