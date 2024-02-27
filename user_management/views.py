@@ -127,22 +127,23 @@ class PasswordResetRequestView(ViewErrorMixin, GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         user = get_obj_or_rest_error(User, "user", email=email)
-        sent = password_reset.send(sender=__name__, user=user)
-        if sent:
-            return Response(
-                get_response(
-                    200,
-                    "Password reset link generated",
-                    {"auth": "A reset password has been sent to your email"},
-                ),
-                status=HTTP_200_OK,
-            )
-        else:
-            raise RestValidationError(
-                "Email sending failed",
-                {"auth": ["An error occurred. Please try again later"]},
-                400,
-            )
+        responses = password_reset.send(sender=__name__, user=user)
+        for receiver, response in responses:
+            if response:
+                return Response(
+                    get_response(
+                        200,
+                        "Password reset link generated",
+                        {"auth": "A reset password has been sent to your email"},
+                    ),
+                    status=HTTP_200_OK,
+                )
+            else:
+                raise RestValidationError(
+                    "Email sending failed",
+                    {"auth": ["An error occurred. Please try again later"]},
+                    400,
+                )
 
 
 class PasswordResetConfirmView(ViewErrorMixin, GenericAPIView):
@@ -189,24 +190,25 @@ class RequestVerificationView(ViewErrorMixin, GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         user = get_obj_or_rest_error(User, "user", email=email)
-        sent = verification.send(sender=__name__, user=user)
-        if sent:
-            return Response(
-                get_response(
-                    HTTP_200_OK,
-                    "Email sent successfully",
-                    {
-                        "auth": "A verification mail has been successfully sent to your email"
-                    },
-                ),
-                status=HTTP_200_OK,
-            )
-        else:
-            raise RestValidationError(
-                "Email sending failed",
-                {"auth": ["An error occurred. Please try again later"]},
-                400,
-            )
+        responses = verification.send(sender=__name__, user=user)
+        for receiver, response in responses:
+            if response:
+                return Response(
+                    get_response(
+                        HTTP_200_OK,
+                        "Email sent successfully",
+                        {
+                            "auth": "A verification mail has been successfully sent to your email"
+                        },
+                    ),
+                    status=HTTP_200_OK,
+                )
+            else:
+                    raise RestValidationError(
+                        "Email sending failed",
+                        {"auth": ["An error occurred. Please try again later"]},
+                        400,
+                )
 
 
 class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
@@ -219,37 +221,36 @@ class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
     def post(self, request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if "token" in serializer.data:
-            user, status = verify_otp_link(serializer.data["token"], "vyf")
-            if status == 400:
-                raise RestValidationError(
-                    "Invalid token",
-                    {"auth": ["Invalid or expired token"]},
-                    HTTP_400_BAD_REQUEST,
-                    success=False,
-                )
+        # if "token" in serializer.data:
+        #     user, status = verify_otp_link(serializer.data["token"], "vyf")
+        #     if status == 400:
+        #         raise RestValidationError(
+        #             "Invalid token",
+        #             {"auth": ["Invalid or expired token"]},
+        #             HTTP_400_BAD_REQUEST,
+        #             success=False,
+        #         )
 
-            if not user:
-                raise RestValidationError(
-                    "Not found",
-                    {"lookup": f"The requested user wasn't found"},
-                    404,
-                    success=False,
-                )
-        else:
-            email = serializer.data.get("email")
-            otp = serializer.data.get("otp")
-            user = get_obj_or_rest_error(User, "user", email=email)
-            if not verify_otp(user, otp):
-                raise RestValidationError(
-                    "Invalid otp",
-                    {"auth": ["Invalid or expired otp"]},
-                    HTTP_400_BAD_REQUEST,
-                    success=False,
-                )
-
+        #     if not user:
+        #         raise RestValidationError(
+        #             "Not found",
+        #             {"lookup": f"The requested user wasn't found"},
+        #             404,
+        #             success=False,
+        #         )
+        email = serializer.data.get("email")
+        otp = serializer.data.get("otp")
+        user = get_obj_or_rest_error(User, "user", email=email)
+        if not verify_otp(user, otp):
+            raise RestValidationError(
+                "Invalid otp",
+                {"auth": ["Invalid or expired otp"]},
+                HTTP_400_BAD_REQUEST,
+                success=False,
+            )
         user.is_verified = True
         user.save()
+        user.reset_secret()
         return Response(
             get_response(
                 HTTP_200_OK,

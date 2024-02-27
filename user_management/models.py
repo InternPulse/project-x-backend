@@ -9,6 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from rest_framework.serializers import ValidationError
+
+
 class User(AbstractUser, BaseModel):
     """Custom user model"""
 
@@ -31,6 +33,11 @@ class User(AbstractUser, BaseModel):
     def full_name(self):
         """Returns the user's full name."""
         return f"{self.first_name} {self.last_name}"
+
+    def reset_secret(self):
+        """To reset the user's otp generator after each usage"""
+        self.secret = random_base32()
+        self.save()
 
     class Meta:
         abstract = False

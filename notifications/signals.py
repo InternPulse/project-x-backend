@@ -6,6 +6,7 @@ from decouple import config
 from .models import TalentRequestTicket, PaymentTicket, DefermentTicket
 from user_management.signals import password_reset, verification
 import utils.otp as u
+from django.conf import settings
 
 User = get_user_model()
 
@@ -177,15 +178,14 @@ def password_reset_receiver(sender, **kwargs):
             reply_to={"email": reply_to_email},
             html_content=html_content,
         )
+    return sent_email == 'Success'
     
 
 @receiver(verification)
 def verification_receiver(sender, **kwargs):
     user = kwargs.get('user')
     if user:
-        token = u.generate_otp_link(user.id, "vyf")
-        link = f"{settings.FE_URL}/activate/{token}"
-        subject = "Reset your password"
+        subject = "Verify your account"
         sender_name = "InternPulse"
         sender_email = config("EMAIL_SENDER")
         reply_to_email = config("REPLY_TO_EMAIL")
@@ -193,8 +193,8 @@ def verification_receiver(sender, **kwargs):
                 <html>
                 <body>
                         <h3>Dear, {user.full_name}!</h3>
-                        <p>Click on the link below to reset your password.</p>
-                        <strong>{link}</strong>
+                        <p>Here is your otp to verify your account.</p>
+                        <strong>{u.get_otp(user)}</strong>
                         <p>Ignore this mail if you didn't request for one</p>
 
                 </body>
@@ -213,4 +213,4 @@ def verification_receiver(sender, **kwargs):
             reply_to={"email": reply_to_email},
             html_content=html_content,
         )
-    
+    return sent_email == 'Success'

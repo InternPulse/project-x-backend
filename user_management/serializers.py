@@ -235,18 +235,9 @@ class EmptySerializer(Serializer):
 
 
 class OTPSerializer(v.SerializerErrorMixin, Serializer):
-    otp = CharField(validators=[v.validate_otp], required=False)
-    link = CharField(required=False)
-    email = EmailField(required=False)
-
-    def validate(self, data):
-        token = data.get("link")
-        otp = data.get("otp")
-        email = data.get("email")
-
-        if token is None and (otp is None or email is None):
-            raise ValidationError("Either link or both otp and email must be provided")
-        return data
+    otp = CharField(validators=[v.validate_otp])
+    # link = CharField(required=False)
+    email = EmailField()
 
 
 class SocialLoginSerializer(v.SerializerErrorMixin, ModelSerializer):
