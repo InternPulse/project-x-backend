@@ -29,7 +29,7 @@ PAYSTACK_PUBLIC_KEY = config("Test_Public_Key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -37,7 +37,7 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "internpulse-api-hd6sz.ondigitalocean.app"
+    "internpulse-api-528rd.ondigitalocean.app"
 ]
 
 # Application definition
@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "dj_rest_auth",
+    "reset_migrations"
 ]
 
 MIDDLEWARE = [
@@ -106,19 +107,18 @@ WSGI_APPLICATION = "internpulse_project.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
+     'default': {
+         'ENGINE': 'django.db.backends.mysql',
         'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
+         'USER': config('DB_USER'),
         'PASSWORD': config("DB_PASSWORD"),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
-    },
-    'test': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    
+         'HOST': config('DB_HOST'),
+         'PORT': config('DB_PORT'),
     }
+    # 'test' : {
+    #     'ENGINE' : 'django.db.backends.sqlite3',
+    #     "NAME" : 'db.sqlite3',
+    # }
 }
 
 REST_FRAMEWORK = {

@@ -6,11 +6,13 @@ from utils.models import BaseModel
 
 from certificates.models import Certificate
 
-
 class Cohort(BaseModel):
     title = models.CharField(max_length=100)
     description = models.TextField()
     rules = models.TextField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+
 
     def __str__(self):
         return self.title

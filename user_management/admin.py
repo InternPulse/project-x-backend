@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import BLToken, Profile, User
+from .models import BLToken, Profile, User, Questionnaire
 
 @admin.register(User)
 class UserAdmin(UserAdmin):
@@ -28,3 +28,4 @@ class UserAdmin(UserAdmin):
     list_display = ("email", "is_staff")
 admin.site.register(BLToken)
 admin.site.register(Profile)
+admin.site.register(Questionnaire)

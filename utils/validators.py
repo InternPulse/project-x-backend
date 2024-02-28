@@ -1,7 +1,7 @@
 """Utility validator function for """
 from typing import Dict, Optional
 from collections.abc import Mapping
-import filetype
+# import filetype
 import re
 from django.conf import settings
 from rest_framework.serializers import ValidationError
@@ -112,13 +112,13 @@ class ViewErrorMixin():
             403,
             success=False
         )
-def validate_name(name: str) -> bool:
+def validate_name(name: str):
     """Validates the name of a user"""
     if len(name) < 2 or len(name) > 50:
         raise ValidationError("Name should be between 2 and 50 characters")
 
 
-def validate_password(password: str) -> bool:
+def validate_password(password: str):
     """Validates the password of a user"""
     if not any(x.islower() for x in password):
         raise ValidationError("Password was contain at least one lower case letter")
@@ -130,7 +130,7 @@ def validate_password(password: str) -> bool:
         raise ValidationError("Password must have at least one letter")
 
 
-def validate_otp(otp: str) -> bool:
+def validate_otp(otp: str):
     """Validates the OTP of a user"""
     if len(otp) != settings.OTP["length"]:
         raise ValidationError(f"OTP must be {settings.OTP['length']} characters long")
@@ -138,31 +138,32 @@ def validate_otp(otp: str) -> bool:
         raise ValidationError("OTP must be a number")
 
 
-def validate_phone(phone: str) -> bool:
+def validate_phone(phone: str):
     phone_regex = r"^\+\d{1,4}\s\d{1,14}$"
     if len(phone) > 20:
-        raise ValidationError("Phone number must be less that 20 digits long")
+        raise ValidationError("Phone number must be less than 20 digits long")
     if not re.match(phone_regex, phone):
         raise ValidationError("Phone number must be in the format +234 1234567890")
 
 
 def validate_image(file):
-    valid_mime_types = ["image/jpeg", "image/png"]
-    filesize = file.size
-    valid_file_extensions = [".png", ".jpg", ".jpeg"]
-    try:
-        kind = filetype.guess(file)
-        if filesize > 8 * 1024 * 1024:
-            raise ValidationError("The maximum file size that can be uploaded is 8MB")
-        if not kind:
-            raise ValidationError("Unsupported file type.")
-        if kind.mime not in valid_mime_types:
-            raise ValidationError("Unsupported file type.")
-        if kind.extension not in valid_file_extensions:
-            raise ValidationError("Unacceptable file extension.")
-    except TypeError as e:
-        print(e)
-        raise ValidationError("Unsupported file type.")
+    pass
+    # valid_mime_types = ["image/jpeg", "image/png"]
+    # filesize = file.size
+    # valid_file_extensions = [".png", ".jpg", ".jpeg"]
+    # try:
+    #     kind = filetype.guess(file)
+    #     if filesize > 8 * 1024 * 1024:
+    #         raise ValidationError("The maximum file size that can be uploaded is 8MB")
+    #     if not kind:
+    #         raise ValidationError("Unsupported file type.")
+    #     if kind.mime not in valid_mime_types:
+    #         raise ValidationError("Unsupported file type.")
+    #     if kind.extension not in valid_file_extensions:
+    #         raise ValidationError("Unacceptable file extension.")
+    # except TypeError as e:
+    #     print(e)
+    #     raise ValidationError("Unsupported file type.")
     
 
 def get_response(status: int, message: str, data: Optional[Dict[str, any]] = {}, errors: Optional[Dict[str, any]] = {}, success: Optional[bool] = True):
@@ -176,3 +177,29 @@ def get_response(status: int, message: str, data: Optional[Dict[str, any]] = {},
     }
     return response
 
+
+def validate_linkedin(linkedin: str):
+    linkedin_regex = r"^https:\/\/linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$"
+    if not re.match(linkedin_regex, linkedin):
+        raise ValidationError("Invalid linkedin url")
+    if len(linkedin) > 150:
+        raise ValidationError("Linkedin url must be less than 150 characters long")
+
+
+def validate_github(github: str):
+    # github_regex = r"^https:\/\/github\.com\/[a-zA-Z0-9-]+\/?$"
+    # if not re.match(github_regex, github):
+    #     raise ValidationError("Invalid github url")
+    if len(github) > 150:
+        raise ValidationError("Github url must be less than 150 characters long")
+
+
+def validate_x(x: str):
+    if len(x) > 150:
+        raise ValidationError("X url must be less than 150 characters long")
+
+def validate_url(url: str):
+    if len(url) > 150:
+        raise ValidationError("Url must be less than 150 characters long")
+    if not url.startswith("https://") and not len(url.split('.')) > 2:
+        raise ValidationError("Invalid url")

@@ -25,8 +25,8 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
-from .models import MyRefreshToken
-from .pagination import CustomPagination
+from .pagination import CustomPagination, UserFilter, QuestionnaireFilter
+from django_filters import rest_framework as filters
 from rest_framework_simplejwt.views import (
     TokenBlacklistView,
     TokenObtainPairView,
@@ -38,7 +38,8 @@ from utils.otp import generate_otp_link, get_otp, verify_otp, verify_otp_link
 from utils.validators import RestValidationError, get_response, ViewErrorMixin
 
 from .backends import CustomJWTAuthentication
-from .models import BLToken, Profile
+from .models import BLToken, Profile, MyRefreshToken, Questionnaire
+from .signals import password_reset, verification
 from .serializers import (
     CustomLoginSerializer,
     CustomLogoutSerializer,
@@ -46,6 +47,7 @@ from .serializers import (
     OTPSerializer,
     PasswordResetSerializer,
     ProfileManageSerializer,
+    QuestionnaireSerializer,
     RequestSerializer,
     SignUpSerializer,
     UserManageSerializer,
@@ -78,14 +80,6 @@ class SignupView(ViewErrorMixin, CreateAPIView):
 
     def perform_create(self, serializer) -> Response:
         user = serializer.save()
-
-        if user:
-            # token = generate_otp_link(user.id, 'vyf')
-            # link = f"{settings.FE_URL}/activate/{token}"
-            # print(link)
-            print(
-                "User created with otp", get_otp(user)
-            )  # Replace with code for emailing otp
         refresh = MyRefreshToken.for_user(user)
         result = {}
         result["refresh"] = str(refresh)
@@ -134,25 +128,23 @@ class PasswordResetRequestView(ViewErrorMixin, GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         user = get_obj_or_rest_error(User, "user", email=email)
-        token = generate_otp_link(user.id, "pwd")
-        link = f"{settings.FE_URL}/password-reset/{token}"
-        print(link)
-        sent = True  # Replace with code for emailing
-        if sent:
-            return Response(
-                get_response(
-                    200,
-                    "Password reset link generated",
-                    {"auth": "A reset password has been sent to your email"},
-                ),
-                status=HTTP_200_OK,
-            )
-        else:
-            raise RestValidationError(
-                "Email sending failed",
-                {"auth": ["An error occurred. Please try again later"]},
-                400,
-            )
+        responses = password_reset.send(sender=__name__, user=user)
+        for receiver, response in responses:
+            if response:
+                return Response(
+                    get_response(
+                        200,
+                        "Password reset link generated",
+                        {"auth": "A reset password has been sent to your email"},
+                    ),
+                    status=HTTP_200_OK,
+                )
+            else:
+                raise RestValidationError(
+                    "Email sending failed",
+                    {"auth": ["An error occurred. Please try again later"]},
+                    400,
+                )
 
 
 class PasswordResetConfirmView(ViewErrorMixin, GenericAPIView):
@@ -199,27 +191,25 @@ class RequestVerificationView(ViewErrorMixin, GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data.get("email")
         user = get_obj_or_rest_error(User, "user", email=email)
-        token = generate_otp_link(user.id, "vyf")
-        link = f"{settings.FE_URL}/activate/{token}"
-        print(link)
-        sent = True  # Replace with code for emailing
-        if sent:
-            return Response(
-                get_response(
-                    HTTP_200_OK,
-                    "Email sent successfully",
-                    {
-                        "auth": "A verification mail has been successfully sent to your email"
-                    },
-                ),
-                status=HTTP_200_OK,
-            )
-        else:
-            raise RestValidationError(
-                "Email sending failed",
-                {"auth": ["An error occurred. Please try again later"]},
-                400,
-            )
+        responses = verification.send(sender=__name__, user=user)
+        for receiver, response in responses:
+            if response:
+                return Response(
+                    get_response(
+                        HTTP_200_OK,
+                        "Email sent successfully",
+                        {
+                            "auth": "A verification mail has been successfully sent to your email"
+                        },
+                    ),
+                    status=HTTP_200_OK,
+                )
+            else:
+                    raise RestValidationError(
+                        "Email sending failed",
+                        {"auth": ["An error occurred. Please try again later"]},
+                        400,
+                )
 
 
 class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
@@ -232,37 +222,36 @@ class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
     def post(self, request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if "token" in serializer.data:
-            user, status = verify_otp_link(serializer.data["token"], "vyf")
-            if status == 400:
-                raise RestValidationError(
-                    "Invalid token",
-                    {"auth": ["Invalid or expired token"]},
-                    HTTP_400_BAD_REQUEST,
-                    success=False,
-                )
+        # if "token" in serializer.data:
+        #     user, status = verify_otp_link(serializer.data["token"], "vyf")
+        #     if status == 400:
+        #         raise RestValidationError(
+        #             "Invalid token",
+        #             {"auth": ["Invalid or expired token"]},
+        #             HTTP_400_BAD_REQUEST,
+        #             success=False,
+        #         )
 
-            if not user:
-                raise RestValidationError(
-                    "Not found",
-                    {"lookup": f"The requested user wasn't found"},
-                    404,
-                    success=False,
-                )
-        else:
-            email = serializer.data.get("email")
-            otp = serializer.data.get("otp")
-            user = get_obj_or_rest_error(User, "user", email=email)
-            if not verify_otp(user, otp):
-                raise RestValidationError(
-                    "Invalid otp",
-                    {"auth": ["Invalid or expired otp"]},
-                    HTTP_400_BAD_REQUEST,
-                    success=False,
-                )
-
+        #     if not user:
+        #         raise RestValidationError(
+        #             "Not found",
+        #             {"lookup": f"The requested user wasn't found"},
+        #             404,
+        #             success=False,
+        #         )
+        email = serializer.data.get("email")
+        otp = serializer.data.get("otp")
+        user = get_obj_or_rest_error(User, "user", email=email)
+        if not verify_otp(user, otp):
+            raise RestValidationError(
+                "Invalid otp",
+                {"auth": ["Invalid or expired otp"]},
+                HTTP_400_BAD_REQUEST,
+                success=False,
+            )
         user.is_verified = True
         user.save()
+        user.reset_secret()
         return Response(
             get_response(
                 HTTP_200_OK,
@@ -271,6 +260,7 @@ class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
             ),
             status=HTTP_200_OK,
         )
+
 
 
 class UserView(ViewErrorMixin, GenericAPIView):
@@ -351,31 +341,15 @@ class UserListView(ViewErrorMixin, ListAPIView):
     serializer_class = UserManageSerializer
     pagination_class = CustomPagination
     queryset = User.objects.all().order_by("id")
-
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.filter_queryset(self.get_queryset())
-
-    #     page = self.paginate_queryset(queryset)
-    #     if page is not None:
-    #         serializer = self.get_serializer(page, many=True)
-    #         return self.get_paginated_response(serializer.data)
-
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(
-    #         get_response(
-    #             HTTP_200_OK,
-    #             "User list",
-    #             serializer.data,
-    #         ),
-    #         status=HTTP_200_OK,
-    #     )
-
+    filterset_class = UserFilter
+    filter_backends = [filters.DjangoFilterBackend]
 
 class ProfileView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = ProfileManageSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
+    allowed_methods = ["GET", "POST", "OPTIONS", "PATCH", "DELETE"]
     def get_object(self):
         return get_obj_or_rest_error(Profile, "profile", user=self.request.user)
 
@@ -390,14 +364,6 @@ class ProfileView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
                 serializer.data,
             ),
             status=HTTP_200_OK,
-        )
-
-    def put(self, request, *args, **kwargs):
-        raise RestValidationError(
-            "Method not allowed",
-            {"auth": ["You cannot perfnorm this operation"]},
-            success=False,
-            status=405,
         )
 
 
@@ -445,3 +411,29 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
     def get_redirect_url(self):
         return "redirect-url"
+
+
+class QuestionnaireView(ViewErrorMixin, CreateAPIView):
+    """Submit a new response to the questionnaire"""
+    permission_classes = [AllowAny]
+    serializer_class = QuestionnaireSerializer
+
+
+class QuestionnaireGetView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminPermission]
+    serializer_class = QuestionnaireSerializer
+    allowed_methods = ["OPTIONS", "GET", "DELETE"]
+
+    def get_object(self):
+        id = self.kwargs.get('id')
+        return get_obj_or_rest_error(Questionnaire, "questionnaire", id=id)
+
+class QuestionnaireListView(ViewErrorMixin, ListAPIView):
+    permission_classes = [IsAdminPermission]
+    serializer_class = QuestionnaireSerializer
+    pagination_class = CustomPagination
+    queryset = Questionnaire.objects.all().order_by("id")
+    filterset_class = QuestionnaireFilter
+    filter_backends = [filters.DjangoFilterBackend]
+
+

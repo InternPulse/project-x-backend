@@ -8,3 +8,12 @@
 #     path('deposit/', DepositFunds.as_view()),
 #     path('deposit/verify/<str:reference>/', VerifyDeposit.as_view()),
 # ]
+
+
+from django.urls import path
+from .views import InitiatePayment, PaystackWebhook
+
+urlpatterns = [
+    path('initiate-payment/', InitiatePayment.as_view(), name='initiate-payment'),
+    path('webhook/', PaystackWebhook.as_view(), name='paystack-webhook'),
+]

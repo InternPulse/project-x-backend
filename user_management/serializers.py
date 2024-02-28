@@ -1,4 +1,6 @@
+
 """All serializers for the views involved in the authentication and account management process"""
+
 from typing import Any, Dict
 import jwt
 from django.contrib.auth import get_user_model
@@ -13,14 +15,15 @@ from rest_framework.serializers import (
     ModelSerializer,
     Serializer,
     SerializerMethodField,
-    ValidationError
+    ValidationError,
+    BooleanField
 )
 from rest_framework.validators import UniqueValidator
 from .models import MyRefreshToken
 from utils import validators as v
 from utils.types import AuthUser
 
-from .models import Profile
+from .models import Profile, Questionnaire
 
 User = get_user_model()
 
@@ -43,7 +46,9 @@ class CustomLoginSerializer(v.SerializerErrorMixin, Serializer):
                 result["access"] = str(refresh.access_token)
                 result["sub"] = str(user.id)
 
-                decoded_token = jwt.decode(result["access"], options={"verify_signature": False})
+                decoded_token = jwt.decode(
+                    result["access"], options={"verify_signature": False}
+                )
                 result["iat"] = decoded_token.get("iat")
                 result["expiry"] = decoded_token.get("exp")
                 update_last_login(None, user)
@@ -76,18 +81,23 @@ class CustomLogoutSerializer(v.SerializerErrorMixin, Serializer):
         except AttributeError:
             pass
         return {}
+
+
 class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
     """Custom signup serializer. It contains only fields that I can get from
     a google authentication and must be changed by a secure link"""
 
-    email = EmailField(validators=[UniqueValidator(queryset=User.objects.all())], required=True)
+    email = EmailField(
+        validators=[UniqueValidator(queryset=User.objects.all())], required=True
+    )
     first_name = CharField(validators=[v.validate_name], required=True)
     last_name = CharField(validators=[v.validate_name], required=True)
     password = CharField(validators=[v.validate_password], required=True)
+    questionnaire_id = CharField(write_only=True, required=False)
 
     class Meta:
         model = User
-        fields = ("email", "first_name", "last_name", "password")
+        fields = ("email", "first_name", "last_name", "password", "questionnaire_id")
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data: dict) -> AuthUser:
@@ -95,9 +105,17 @@ class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
         try:
             password = validated_data.pop("password")
             validated_data["username"] = validated_data["email"]
+            questionnaire_id = validated_data.pop("questionnaire_id", None)
             user = User.objects.create(**validated_data)
             user.set_password(password)
             user.save()
+            if questionnaire_id:
+                try:
+                    questionnaire = Questionnaire.objects.get(id=int(questionnaire_id))
+                    questionnaire.user = user
+                    questionnaire.save()
+                except Questionnaire.ObjectDoesNotExist:
+                    pass
         except IntegrityError as e:
             if "email" in str(e):
                 raise v.RestValidationError(
@@ -116,10 +134,9 @@ class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
         return user
 
 
-class ProfileManageSerializer(ModelSerializer):
+class ProfileManageSerializer(v.SerializerErrorMixin, ModelSerializer):
     """Serializer for modifying your profile"""
 
-    avatar = ImageField(required=False, validators=[v.validate_image])
     address = CharField(required=False)
     phone_number = CharField(required=False, validators=[v.validate_phone])
     country = CharField(required=False, validators=[v.validate_name])
@@ -127,16 +144,29 @@ class ProfileManageSerializer(ModelSerializer):
     city = CharField(required=False, validators=[v.validate_name])
     zip_code = CharField(required=False, validators=[v.validate_name])
 
+    career_path = CharField(max_length=150, required=False)
+    linkedin_url = CharField(validators=[v.validate_url], required=False)
+    github_url = CharField(validators=[v.validate_url], required=False)
+    x_url = CharField(validators=[v.validate_url], required=False)
+    occupation = CharField(max_length=100, required=False)
+    can_share_PI = BooleanField(default=False, required=False)
+
     class Meta:
         model = Profile
         fields = [
-            "avatar",
             "address",
             "phone_number",
             "country",
             "state",
             "city",
             "zip_code",
+
+            "career_path",
+            "linkedin_url",
+            "github_url",
+            "x_url",
+            "occupation",
+            "can_share_PI"
         ]
 
 
@@ -192,7 +222,6 @@ class UserManageSerializer(v.SerializerErrorMixin, ModelSerializer):
         else:
             return {}
 
-
 class RequestSerializer(v.SerializerErrorMixin, Serializer):
     email = EmailField()
 
@@ -207,23 +236,9 @@ class EmptySerializer(Serializer):
 
 
 class OTPSerializer(v.SerializerErrorMixin, Serializer):
-    otp = CharField(validators=[v.validate_otp], required=False)
-    link = CharField(required=False)
-    email = EmailField(required=False)
-
-    def validate(self, data):
-        token = data.get("link")
-        otp = data.get("otp")
-        email = data.get("email")
-
-        if token is None and (otp is None or email is None):
-            raise v.RestValidationError(
-                "Either link or both otp and email must be provided",
-                {
-                    "otp": ["An otp and email must be provided or a token must be provided"]
-                },
-                success=False
-                )
+    otp = CharField(validators=[v.validate_otp])
+    # link = CharField(required=False)
+    email = EmailField()
 
 
 class SocialLoginSerializer(v.SerializerErrorMixin, ModelSerializer):
@@ -233,3 +248,32 @@ class SocialLoginSerializer(v.SerializerErrorMixin, ModelSerializer):
     class Meta:
         model = User
         fields = ["access", "refresh"]
+
+
+class QuestionnaireSerializer(v.SerializerErrorMixin, ModelSerializer):
+    has_experience_programming = BooleanField(default=False)
+    worked_on_real_life_problems = BooleanField(default=False)
+    reason_for_joining_Internpulse = CharField(required=True)
+    importance_of_work_exp = CharField(required=True)
+    user = SerializerMethodField()
+    id = CharField(read_only=True)
+
+    class Meta:
+        model = Questionnaire
+        fields = [
+            "id",
+            "user",
+            "has_experience_programming",
+            "worked_on_real_life_problems",
+            "reason_for_joining_Internpulse",
+            "importance_of_work_exp",
+            "user",
+        ]
+
+    def get_user(self, obj):
+        if hasattr(obj, "user"):
+            user_data = UserManageSerializer(obj.user).data
+            user_data.pop("profile", {})
+            return user_data
+        else:
+            return {}

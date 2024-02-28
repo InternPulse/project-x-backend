@@ -12,6 +12,7 @@ __mypy_cache__/*
 db.sqlite3
 magic
 projectxenv
+myenv/
 
 # ignoring app caches and migrations to avoid conflict during deployment
 !**/__pycache__**

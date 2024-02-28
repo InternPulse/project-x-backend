@@ -9,6 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from rest_framework.serializers import ValidationError
+
+
 class User(AbstractUser, BaseModel):
     """Custom user model"""
 
@@ -32,6 +34,11 @@ class User(AbstractUser, BaseModel):
         """Returns the user's full name."""
         return f"{self.first_name} {self.last_name}"
 
+    def reset_secret(self):
+        """To reset the user's otp generator after each usage"""
+        self.secret = random_base32()
+        self.save()
+
     class Meta:
         abstract = False
 
@@ -53,7 +60,7 @@ class Profile(BaseModel):
     """Profile model"""
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    # avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     address = models.CharField(max_length=150, blank=True, default="")
     phone_number = models.CharField(max_length=15, blank=True, default="")
     country = models.CharField(max_length=150, blank=True, default="")
@@ -61,10 +68,31 @@ class Profile(BaseModel):
     city = models.CharField(max_length=150, blank=True, default="")
     zip_code = models.CharField(max_length=10, blank=True, default="")
     tech_stack = models.JSONField(blank=True, default=dict)
+    career_path = models.CharField(max_length=150, blank=True, default="")
+    linkedin_url = models.CharField(max_length=150, blank=True, default="")
+    github_url = models.CharField(max_length=150, blank=True, default="")
+    x_url = models.CharField(max_length=150, blank=True, default="")
+    occupation = models.CharField(max_length=150, blank=True, default="")
+    can_share_PI = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Profile - {self.user.full_name}"
 
+    class Meta:
+        abstract = False
+
+class Questionnaire(BaseModel):
+    """Questionnaire model"""
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="questionnaire_reply", null=True)
+    has_experience_programming = models.BooleanField(default=False)
+    worked_on_real_life_problems = models.BooleanField(default=False)
+    reason_for_joining_Internpulse = models.TextField(default="", blank=True)
+    importance_of_work_exp = models.TextField()
+
+    def __str__(self):
+        return f"Survey filled by {self.user.full_name or 'anonymous'}"
+    
     class Meta:
         abstract = False
 
