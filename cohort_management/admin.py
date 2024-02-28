@@ -13,7 +13,7 @@ admin.site.register(Cohort, CohortAdmin)
 
 
 class InternProfileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'cohort', 'role', 'certificate_id', 'created_at', 'updated_at')
+    list_display = ('id', 'user', 'cohort', 'role', 'created_at', 'updated_at')
     list_filter = ('created_at', 'updated_at')
     search_fields = ('user__email', 'cohort__title', 'role')
 
