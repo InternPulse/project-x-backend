@@ -13,6 +13,8 @@ db.sqlite3
 magic
 projectxenv
 myenv/
+staticfiles
+notifications/unused.py
 
 # ignoring app caches and migrations to avoid conflict during deployment
 !**/__pycache__**
