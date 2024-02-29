@@ -27,7 +27,8 @@ class PaymentTicket(BaseModel):
             ("PENDING", "Pending"),
             ("SUCCESSFUL", "Successful"),
         ],
-        max_length=50, default="PENDING"
+        max_length=50,
+        default="PENDING",
     )
     account_number = models.CharField(null=False, max_length=50)
     account_owner = models.CharField(null=False, max_length=11)
@@ -47,7 +48,8 @@ class DefermentTicket(BaseModel):
             ("PENDING", "Pending"),
             ("APPROVED", "Approved"),
         ],
-        max_length=50, default="PENDING"
+        max_length=50,
+        default="PENDING",
     )
 
 
