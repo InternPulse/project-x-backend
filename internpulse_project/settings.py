@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     "cohort_management",
     "certificates",
     "payments",
-    "paystack",
+    # "paystack",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",

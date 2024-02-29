@@ -21,6 +21,7 @@ class InitiatePayment(APIView):
         amount = request.data.get('amount')
         email = user.email  # Assuming the user model has an email field
         callback_url = request.data.get('callback_url')
+        print(user)
 
         headers = {
             "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
