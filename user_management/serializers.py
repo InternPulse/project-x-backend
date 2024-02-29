@@ -53,11 +53,8 @@ class CustomLoginSerializer(v.SerializerErrorMixin, Serializer):
                 update_last_login(None, user)
                 return v.get_response(200, "Login successful", result)
             else:
-                raise v.RestValidationError(
-                    "Invalid email or password",
-                    {"signup": ["Invalid email or password"]},
-                    success=False,
-                    status=409,
+                raise ValidationError(
+                    {"auth":"Invalid email or password"},
                 )
 
     @classmethod
@@ -80,7 +77,6 @@ class CustomLogoutSerializer(v.SerializerErrorMixin, Serializer):
         except AttributeError:
             pass
         return {}
-
 
 class SignUpSerializer(v.SerializerErrorMixin, ModelSerializer):
     """Custom signup serializer. It contains only fields that I can get from
@@ -261,12 +257,12 @@ class QuestionnaireSerializer(v.SerializerErrorMixin, ModelSerializer):
         model = Questionnaire
         fields = [
             "id",
+            "created_at",
             "user",
             "has_experience_programming",
             "worked_on_real_life_problems",
             "reason_for_joining_Internpulse",
             "importance_of_work_exp",
-            "user",
         ]
 
     def get_user(self, obj):

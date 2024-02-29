@@ -4,6 +4,7 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
@@ -91,7 +92,7 @@ class SignupView(ViewErrorMixin, CreateAPIView):
         result["iat"] = decoded_token.get("iat")
         result["expiry"] = decoded_token.get("exp")
         return Response(
-            get_response(200, "Signup successful", result),
+            get_response(201, "Signup successful", result),
             status=HTTP_201_CREATED,
         )
 
@@ -114,8 +115,28 @@ class LogoutView(ViewErrorMixin, TokenBlacklistView):
         return Response(get_response(200, "Logout successful", {}), 200)
 
 
-class MyRefreshTokenView(ViewErrorMixin, TokenRefreshView):
-    pass
+class MyRefreshTokenView(ViewErrorMixin, GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CustomLogoutSerializer
+
+    def post(self, request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        refresh = MyRefreshToken.for_user(user)
+        result = {}
+        result["refresh"] = str(refresh)
+        result["access"] = str(refresh.access_token)
+        result["sub"] = str(user.id)
+        decoded_token = jwt.decode(
+            result["access"], options={"verify_signature": False}
+        )
+        result["iat"] = decoded_token.get("iat")
+        result["expiry"] = decoded_token.get("exp")
+        return Response(
+            get_response(200, "Token refreshed", result),
+            status=HTTP_200_OK,
+        )
 
 
 class PasswordResetRequestView(ViewErrorMixin, GenericAPIView):
@@ -262,11 +283,9 @@ class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
         )
 
 
-
 class UserView(ViewErrorMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserManageSerializer
-    authentication_classes = [CustomJWTAuthentication]
 
     def get_permissions(self):
         if self.request.method in ["GET", "PATCH"]:
@@ -311,8 +330,8 @@ class UserView(ViewErrorMixin, GenericAPIView):
             )
 
         serializer = self.serializer_class(user, data=request.data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            user = serializer.save()
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
         return Response(
             get_response(
                 HTTP_200_OK,
@@ -331,8 +350,7 @@ class UserView(ViewErrorMixin, GenericAPIView):
         else:
             user.delete()
         return Response(
-            get_response(HTTP_200_OK, "User deleted", {}),
-            status=HTTP_200_OK,
+            status=204,
         )
 
 
@@ -345,25 +363,57 @@ class UserListView(ViewErrorMixin, ListAPIView):
     filter_backends = [filters.DjangoFilterBackend]
 
 class ProfileView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
+    """SO for now we're not allowed to delete a profile after creationg because a user
+    should have his profile"""
     serializer_class = ProfileManageSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    allowed_methods = ["GET", "POST", "OPTIONS", "PATCH", "DELETE"]
+    allowed_methods = ["GET", "POST", "OPTIONS", "PATCH", ]
     def get_object(self):
         return get_obj_or_rest_error(Profile, "profile", user=self.request.user)
 
     def post(self, request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)
+        try:
+            serializer.save(user=request.user)  
+        except IntegrityError:
+            raise RestValidationError(
+                "Profile already exists",
+                {"profile": "A profile already exists for this user"},
+                HTTP_400_BAD_REQUEST,
+                success=False,
+            )
         return Response(
             get_response(
-                HTTP_200_OK,
+                HTTP_201_CREATED,
                 "Profile created",
                 serializer.data,
             ),
-            status=HTTP_200_OK,
+            status=HTTP_201_CREATED
+        )
+    def get(self, request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(self.get_object())
+        return Response(
+            get_response(
+                HTTP_200_OK,
+                "Profile data",
+                serializer.data,
+            ),
+            status=HTTP_200_OK
+        )
+    def patch(self, request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            get_response(
+                HTTP_200_OK,
+                "Profile modified",
+                serializer.data,
+            ),
+            status=HTTP_200_OK
         )
 
 
@@ -418,6 +468,19 @@ class QuestionnaireView(ViewErrorMixin, CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = QuestionnaireSerializer
 
+    def post(self, request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            get_response(
+                HTTP_201_CREATED,
+                "Reply successfully submitted",
+                serializer.data,
+            ),
+            status=HTTP_201_CREATED
+        )        
+
 
 class QuestionnaireGetView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminPermission]
@@ -428,6 +491,17 @@ class QuestionnaireGetView(ViewErrorMixin, RetrieveUpdateDestroyAPIView):
         id = self.kwargs.get('id')
         return get_obj_or_rest_error(Questionnaire, "questionnaire", id=id)
 
+    def get(self, request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(self.get_object())
+        return Response(
+            get_response(
+                HTTP_200_OK,
+                "Profile data",
+                serializer.data,
+            ),
+            status=HTTP_200_OK
+        )
+
 class QuestionnaireListView(ViewErrorMixin, ListAPIView):
     permission_classes = [IsAdminPermission]
     serializer_class = QuestionnaireSerializer
@@ -435,5 +509,7 @@ class QuestionnaireListView(ViewErrorMixin, ListAPIView):
     queryset = Questionnaire.objects.all().order_by("id")
     filterset_class = QuestionnaireFilter
     filter_backends = [filters.DjangoFilterBackend]
+
+
 
 
