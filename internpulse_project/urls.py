@@ -39,6 +39,6 @@ urlpatterns = [
     path(
         "api/v1/", include("notifications.urls")
     ),  # URL for notifications
-    path('api/v1/paystack/', include('paystack.urls')), #URL for paymnets
+    # path('api/v1/paystack/', include('paystack.urls')), #URL for paymnets
     path("api/v1/", include("payments.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
