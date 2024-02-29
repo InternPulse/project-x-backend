@@ -8,7 +8,6 @@ from rest_framework.serializers import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.fields import (empty, get_error_detail)
 from rest_framework.settings import api_settings
-
 class RestValidationError(ValidationError):
     """A custom validation error to follow our rest convention"""
     def __init__(self, message: str, errors: Dict[str, list], status: int = 400, data: Dict[str, any] = {}, success: Optional[bool] = True):
@@ -74,7 +73,7 @@ class SerializerErrorMixin():
 
         return not bool(self._errors)
     def get_error_detail(self, exc):
-        print("Exc", type(exc))
+        # print("Exc", type(exc))
         assert isinstance(exc, (ValidationError, DjangoValidationError))
 
         if isinstance(exc, DjangoValidationError):
@@ -144,26 +143,6 @@ def validate_phone(phone: str):
         raise ValidationError("Phone number must be less than 20 digits long")
     if not re.match(phone_regex, phone):
         raise ValidationError("Phone number must be in the format +234 1234567890")
-
-
-def validate_image(file):
-    pass
-    # valid_mime_types = ["image/jpeg", "image/png"]
-    # filesize = file.size
-    # valid_file_extensions = [".png", ".jpg", ".jpeg"]
-    # try:
-    #     kind = filetype.guess(file)
-    #     if filesize > 8 * 1024 * 1024:
-    #         raise ValidationError("The maximum file size that can be uploaded is 8MB")
-    #     if not kind:
-    #         raise ValidationError("Unsupported file type.")
-    #     if kind.mime not in valid_mime_types:
-    #         raise ValidationError("Unsupported file type.")
-    #     if kind.extension not in valid_file_extensions:
-    #         raise ValidationError("Unacceptable file extension.")
-    # except TypeError as e:
-    #     print(e)
-    #     raise ValidationError("Unsupported file type.")
     
 
 def get_response(status: int, message: str, data: Optional[Dict[str, any]] = {}, errors: Optional[Dict[str, any]] = {}, success: Optional[bool] = True):
