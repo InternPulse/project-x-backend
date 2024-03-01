@@ -3,7 +3,7 @@ from .views import TalentRequestTicketRegistrationView
 
 urlpatterns = [
     path(
-        "talent-request/",
+        "talent-request",
         TalentRequestTicketRegistrationView.as_view(),
         name="talent-request",
     ),
