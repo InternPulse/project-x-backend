@@ -38,7 +38,7 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "internpulse-api-528rd.ondigitalocean.app"
+    "project-x-backend-lbglg.ondigitalocean.app"
 ]
 
 # Application definition
