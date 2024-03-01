@@ -1,18 +1,18 @@
-from django.test import TestCase
 from django.db.models.signals import post_save
 from django.urls import reverse
 from notifications.signals import send_welcome_email
 from rest_framework.test import APIClient, APITestCase
 from utils.types import test_response_schema
+from utils.otp import generate_otp_link, get_otp
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from urllib.parse import urlencode
 import random
 import string
 from .models import Profile, Questionnaire
-from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+
+
 User = get_user_model()
 post_save.disconnect(send_welcome_email, sender=User)
 
@@ -66,7 +66,7 @@ class SignUpTestCase(APITestCase):
 class LoginTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        existing_user = User.objects.create_user(
+        User.objects.create_user(
             email="test@gmail.com",
             password="password123",
             first_name="Test",
@@ -298,7 +298,7 @@ class ProfileManageTestCase(APITestCase):
             last_name="User",
             username=generate_random_username()
         )
-        profile = Profile.objects.create(user=self.user, address="2b centenary Garden PH")
+        Profile.objects.create(user=self.user, address="2b centenary Garden PH")
 
     def auth(self, user):
         refresh = RefreshToken.for_user(user)
@@ -795,7 +795,6 @@ class LogoutTestCase(APITestCase):
         self.assertTrue(test_response_schema(data))
 
 
-
 class RefreshTokenTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -853,4 +852,173 @@ class RefreshTokenTestCase(APITestCase):
         self.assertEqual(data["status"], 401)
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "Not authorized")
+        self.assertTrue(test_response_schema(data))
+
+
+class VerificationConfirmTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email="test@gmail.com",
+            password="password123",
+            first_name="Test",
+            last_name="User",
+            username=generate_random_username()
+        )
+
+    def test_verification_confirm_with_correct_otp(self):
+        data = {
+            "email": "test@gmail.com",
+            "otp": get_otp(self.user)
+        }
+        url = reverse('verify-confirm')
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["status"], 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(test_response_schema(data))
+
+    def test_verification_confirm_with_wrong_otp(self):
+        data = {
+            "email": self.user.email,
+            "otp": "654321"
+        }
+        url = reverse('verify-confirm')
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data["status"], 400)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(test_response_schema(data))
+        self.assertIn("auth", data["errors"])
+
+    def test_verification_confirm_with_non_existing_user(self):
+        data = {
+            "email": "test2@gmai.com",
+            "otp": "654321"
+        }
+        url = reverse('verify-confirm')
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data["status"], 404)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(test_response_schema(data))
+
+
+class PasswordResetTestCase(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email="test@gmail.com",
+            password="password123",
+            first_name="Test",
+            last_name="User",
+            username=generate_random_username()
+        )
+        self.token = generate_otp_link(self.user.id, "pwd")
+
+    def test_password_reset_with_invalid_token(self):
+        data = {
+            "password": "Yaay12345",
+            "confirm_password": "Yaay12345"
+        }
+        url = reverse('password-reset', kwargs={'token': 'invalid_token'})
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data["status"], 400)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(test_response_schema(data))
+
+    def test_password_reset_with_dissimilar_passwords(self):
+        data = {
+            "password": "Yaay1234",
+            "confirm_password": "Yaay12345"
+        }
+        url = reverse('password-reset', kwargs={'token': self.token})
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data["status"], 400)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(test_response_schema(data))
+        self.assertIn("password", data["errors"])
+
+    def test_password_reset_with_valid_token(self):
+        data = {
+            "password": "Yaay12345",
+            "confirm_password": "Yaay12345"
+        }
+        url = reverse('password-reset', kwargs={'token': self.token})
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["status"], 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(test_response_schema(data))
+    
+
+
+class RequestVerificationOTPTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_request_verification_otp_with_invalid_email(self):
+        data = {
+            "email": "invalidemail",
+        }
+        url = reverse('request-verification')
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data["status"], 400)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(len(data["errors"]), 1)
+        self.assertTrue(test_response_schema(data))
+
+    def test_request_verification_otp_with_non_existing_user(self):
+        data = {
+            "email": "nonexistinguser@gmail.com",
+        }
+        url = reverse('request-verification')
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data["status"], 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(len(data["errors"]), 1)
+        self.assertTrue(test_response_schema(data))
+
+
+class RequestPasswordResetLinkTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_request_password_reset_link_with_invalid_email(self):
+        data = {
+            "email": "invalidemail",
+        }
+        url = reverse('request-reset-password')
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data["status"], 400)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(len(data["errors"]), 1)
+        self.assertTrue(test_response_schema(data))
+
+    def test_request_password_reset_link_with_non_existing_user(self):
+        data = {
+            "email": "nonexistinguser@gmail.com",
+        }
+        url = reverse('request-reset-password')
+        response = self.client.post(url, data)
+        data = response.json()
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data["status"], 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(len(data["errors"]), 1)
         self.assertTrue(test_response_schema(data))

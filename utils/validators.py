@@ -10,7 +10,7 @@ from rest_framework.fields import (empty, get_error_detail)
 from rest_framework.settings import api_settings
 class RestValidationError(ValidationError):
     """A custom validation error to follow our rest convention"""
-    def __init__(self, message: str, errors: Dict[str, list], status: int = 400, data: Dict[str, any] = {}, success: Optional[bool] = True):
+    def __init__(self, message: str, errors: Dict[str, list], status: int = 400, data: Dict[str, any] = {}, success: Optional[bool] = False):
         super().__init__(message)
         self.status = status
         self.status_code = status
