@@ -4,6 +4,7 @@ from rest_framework import serializers
 import re
 import sib_api_v3_sdk
 
+
 def send_email(to, reply_to, html_content, sender, subject):
     try:
         configuration = sib_api_v3_sdk.Configuration()
@@ -30,7 +31,7 @@ def send_email(to, reply_to, html_content, sender, subject):
 
 
 def validate_website(value: str) -> None:
-   
+
     regex = r"^(http|https)?://(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     if not re.match(regex, value):
         raise serializers.ValidationError(

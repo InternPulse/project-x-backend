@@ -5,6 +5,7 @@ from .serializers import TalentRequestTicketSerializer
 
 # Create your views here.
 
+
 class TalentRequestTicketRegistrationView(generics.CreateAPIView):
     """
     API view for talent request ticket registration.
@@ -20,7 +21,7 @@ class TalentRequestTicketRegistrationView(generics.CreateAPIView):
 
         response_data = {
             "status": "success",
-            "error" : None,
+            "error": None,
             "message": "Talent request ticket created successfully. An acknowledgement message has been sent to your email",
             "data": serializer.data,
         }
