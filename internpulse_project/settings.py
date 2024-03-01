@@ -29,7 +29,8 @@ PAYSTACK_PUBLIC_KEY = config("Test_Public_Key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+# DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = True
 
 
 CORS_ORIGIN_ALLOW_ALL = True

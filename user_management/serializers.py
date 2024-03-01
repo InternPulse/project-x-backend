@@ -11,7 +11,6 @@ from rest_framework.serializers import (
     CharField,
     ChoiceField,
     EmailField,
-    ImageField,
     ModelSerializer,
     Serializer,
     SerializerMethodField,
@@ -225,7 +224,6 @@ class RequestSerializer(v.SerializerErrorMixin, Serializer):
 class PasswordResetSerializer(v.SerializerErrorMixin, Serializer):
     password = CharField(validators=[v.validate_password])
     confirm_password = CharField(validators=[v.validate_password])
-
 
 class EmptySerializer(Serializer):
     pass

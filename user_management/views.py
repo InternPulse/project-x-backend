@@ -6,9 +6,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
-from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import (
     CreateAPIView,
     GenericAPIView,
@@ -31,11 +29,10 @@ from django_filters import rest_framework as filters
 from rest_framework_simplejwt.views import (
     TokenBlacklistView,
     TokenObtainPairView,
-    TokenRefreshView,
 )
 from urllib.parse import unquote
 from user_management.permissions import IsAdminPermission
-from utils.otp import generate_otp_link, get_otp, verify_otp, verify_otp_link
+from utils.otp import verify_otp, verify_otp_link
 from utils.validators import RestValidationError, get_response, ViewErrorMixin
 
 from .backends import CustomJWTAuthentication
@@ -108,7 +105,7 @@ class LogoutView(ViewErrorMixin, TokenBlacklistView):
     serializer_class = CustomLogoutSerializer
 
     def post(self, request, *args, **kwargs) -> Response:
-        response = super().post(request, *args, **kwargs)
+        super().post(request, *args, **kwargs)
         header = request.headers.get("Authorization")
         token = header.split(" ")[1]
         BLToken.objects.create(token=token, user=request.user)
@@ -183,21 +180,32 @@ class PasswordResetConfirmView(ViewErrorMixin, GenericAPIView):
         user, status = verify_otp_link(token, "pwd")
 
         if status == 400:
-            return Response(
-                {"status": "invalid or expired token"}, status=HTTP_400_BAD_REQUEST
+            raise RestValidationError(
+                "Invalid link",
+                {"auth": ["invalid or expired link"]}, 
+                HTTP_400_BAD_REQUEST
             )
-        if status == 400:
-            return Response(
-                {"status": "User does not exist. May have been deleted"},
+        if status == 404:
+            raise RestValidationError(
+                "Not found",
+                {"password": "User does not exist. May have been deleted"},
                 status=HTTP_404_NOT_FOUND,
             )
         if pwd != _pwd:
-            return Response(
-                {"status": "passwords do not match"}, status=HTTP_400_BAD_REQUEST
+            raise RestValidationError(
+                "Password mismatch",
+                {"password": ["Passwords do not match"]},
+                HTTP_400_BAD_REQUEST,
             )
         user.set_password(pwd)
         user.save()
-        return Response({"status": "success"}, status=HTTP_200_OK)
+        return Response(
+            get_response(
+                HTTP_200_OK,
+                "Password Changed successfully",
+                {"auth": "Password changed successfully"},
+            ), status=HTTP_200_OK
+        )
 
 
 class RequestVerificationView(ViewErrorMixin, GenericAPIView):
@@ -243,23 +251,6 @@ class VerificationConfirmView(ViewErrorMixin, GenericAPIView):
     def post(self, request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # if "token" in serializer.data:
-        #     user, status = verify_otp_link(serializer.data["token"], "vyf")
-        #     if status == 400:
-        #         raise RestValidationError(
-        #             "Invalid token",
-        #             {"auth": ["Invalid or expired token"]},
-        #             HTTP_400_BAD_REQUEST,
-        #             success=False,
-        #         )
-
-        #     if not user:
-        #         raise RestValidationError(
-        #             "Not found",
-        #             {"lookup": f"The requested user wasn't found"},
-        #             404,
-        #             success=False,
-        #         )
         email = serializer.data.get("email")
         otp = serializer.data.get("otp")
         user = get_obj_or_rest_error(User, "user", email=email)
@@ -350,7 +341,7 @@ class UserView(ViewErrorMixin, GenericAPIView):
         else:
             user.delete()
         return Response(
-            status=204,
+            status=HTTP_204_NO_CONTENT,
         )
 
 
