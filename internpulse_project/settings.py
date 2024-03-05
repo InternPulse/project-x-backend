@@ -29,7 +29,8 @@ PAYSTACK_PUBLIC_KEY = config("Test_Public_Key")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+# DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = True
 
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -37,12 +38,7 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "internpulse-api-528rd.ondigitalocean.app",
-    "novel-needlessly-bass.ngrok-free.app"
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://*novel-needlessly-bass.ngrok-free.app/'
+    "project-x-backend-lbglg.ondigitalocean.app"
 ]
 
 # Application definition

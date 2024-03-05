@@ -1,9 +1,10 @@
 from django.shortcuts import render
 
 # Create your views here.
+import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 import requests
 from django.conf import settings
 import json
@@ -14,26 +15,39 @@ from .models import Transaction
 from .serializers import TransactionSerializer
 
 class InitiatePayment(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+
+    @staticmethod
+    def generate_unique_reference():
+        # Generates a unique reference using UUID
+        return str(uuid.uuid4())
 
     def post(self, request):
-        user = request.user
+        email = request.data.get('email')  # Get email from request data
+        if not email:
+            return Response({"error": "Email is required"}, status=400)
         amount = request.data.get('amount')
-        email = user.email  # Assuming the user model has an email field
         callback_url = request.data.get('callback_url')
-        print(user)
+        reference = self.generate_unique_reference()  # Ensure this method exists
 
         headers = {
             "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
             "Content-Type": "application/json",
         }
         data = {
-            "amount": amount,
             "email": email,
+            "amount": amount,
             "callback_url": callback_url,
+            "reference": reference,
         }
         response = requests.post('https://api.paystack.co/transaction/initialize', headers=headers, json=data)
-        return Response(response.json())
+        # Check the response from Paystack
+        if response.status_code == 200:
+            # Payment initialized successfully
+            return Response(response.json(), status=response.status_code)
+        else:
+            # Paystack returned an error
+            return Response(response.json(), status=response.status_code)
 
 # class PaystackWebhook(APIView):
 #     permission_classes = []  # No authentication required

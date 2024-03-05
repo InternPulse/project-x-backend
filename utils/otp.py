@@ -49,7 +49,7 @@ def generate_otp_link(user_id: int, purpose: str):
 def verify_otp_link(token: str, purpose: str):
     """Verify the generated otps for password reset and account verification"""
     try:
-        data = si.loads(token, max_age=settings.TOKEN_EXPIRY)
+        data = si.loads(token, max_age=settings.OTP["expiry"])
         if purpose != data.get("for"):
             return None, 400
         user = User.objects.get(id=data.get("user_id"))
