@@ -37,7 +37,12 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "internpulse-api-528rd.ondigitalocean.app"
+    "internpulse-api-528rd.ondigitalocean.app",
+    "novel-needlessly-bass.ngrok-free.app"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*novel-needlessly-bass.ngrok-free.app/'
 ]
 
 # Application definition
@@ -117,7 +122,7 @@ DATABASES = {
          'HOST': config('DB_HOST'),
          'PORT': config('DB_PORT'),
     }
-    # 'test' : {
+    # 'default' : {
     #     'ENGINE' : 'django.db.backends.sqlite3',
     #     "NAME" : 'db.sqlite3',
     # }
