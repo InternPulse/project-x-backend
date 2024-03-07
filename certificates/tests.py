@@ -31,7 +31,7 @@ class CertificateIssueBatchAPIViewTests(TestCase):
         # self.client.force_authenticate(user=self.user1)
 
     def test_certificate_list_create_endpoint(self):
-        url = reverse('certificate-list')
+        url = reverse('certificate-list-create')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
 
