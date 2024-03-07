@@ -5,39 +5,18 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from .models import Certificate
-from .serializers import CertificateSerializer, CertificateIssueBatchSerializer
+from .serializers import CertificateSerializer, CertificateIssueBatchSerializer, CertificateDetailSerializer
 
 from cohort_management.models import InternProfile, Cohort
 
 
-# Create your views here.
-class CertificateListCreateAPIView(generics.ListCreateAPIView):
+class CertificateCreateAPIView(generics.CreateAPIView):
     """
-    A view to list all certificates and to create one.
+    A view to create a certificate.
     """
     serializer_class = CertificateSerializer
     permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
-
-    def get_queryset(self):
-        return Certificate.objects.all()
-
-    def list(self, request, *args, **kwargs):
-        """
-        Get a list of all certificates.
-
-        Returns:
-            Response: RESTful response with a list of certificates.
-        """
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.serializer_class(queryset, many=True)
-        data = {
-            "status": status.HTTP_200_OK,
-            "success": True,
-            "message": "Certificates retrieved successfully",
-            "data": serializer.data
-        }
-        return Response(data)
 
     def post(self, request, *args, **kwargs):
         """
@@ -64,6 +43,36 @@ class CertificateListCreateAPIView(generics.ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Create your views here.
+class CertificateListAPIView(generics.ListAPIView):
+    """
+    A view to list all certificates.
+    """
+    serializer_class = CertificateDetailSerializer
+    permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        return Certificate.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        """
+        Get a list of all certificates.
+
+        Returns:
+            Response: RESTful response with a list of certificates.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.serializer_class(queryset, many=True)
+        data = {
+            "status": status.HTTP_200_OK,
+            "success": True,
+            "message": "Certificates retrieved successfully",
+            "data": serializer.data
+        }
+        return Response(data)
+
+
 class CertificateDetailAPIView(generics.RetrieveAPIView):
     """
     A view to retrieve a cohort.
@@ -71,7 +80,7 @@ class CertificateDetailAPIView(generics.RetrieveAPIView):
     Allows unauthenticated and authenticated users to retrieve a certificate by its ID.
     """
     queryset = Certificate.objects.all()
-    serializer_class = CertificateSerializer
+    serializer_class = CertificateDetailSerializer
     parser_classes = [MultiPartParser, FormParser]
 
     def retrieve(self, request, *args, **kwargs):
@@ -122,7 +131,7 @@ class CertificateUpdateAPIView(generics.UpdateAPIView):
         """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.serializer_class(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         data = {
