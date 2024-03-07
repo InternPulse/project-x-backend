@@ -70,7 +70,7 @@ class CertificateListAPIView(generics.ListAPIView):
             "message": "Certificates retrieved successfully",
             "data": serializer.data
         }
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class CertificateDetailAPIView(generics.RetrieveAPIView):
@@ -103,7 +103,7 @@ class CertificateDetailAPIView(generics.RetrieveAPIView):
             "message": "Certificate retrieved successfully",
             "data": serializer.data
         }
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class CertificateUpdateAPIView(generics.UpdateAPIView):
@@ -140,7 +140,7 @@ class CertificateUpdateAPIView(generics.UpdateAPIView):
             "message": "Certificates updated successfully",
             "data": serializer.data
         }
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class CertificateDestroyAPIView(generics.DestroyAPIView):
@@ -169,12 +169,11 @@ class CertificateDestroyAPIView(generics.DestroyAPIView):
         instance = self.get_object()
         self.perform_destroy(instance)
         data = {
-            "status": status.HTTP_204_NO_CONTENT,
+            "status": status.HTTP_200_OK,
             "success": True,
-            "message": "Certificate deleted successfully",
-            "deleted_certificate_id": instance.id  # Include the ID of the deleted certificate
+            "message": "Certificate deleted successfully"
         }
-        return Response(data, status=status.HTTP_204_NO_CONTENT)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class CertificateIssueBatchAPIView(generics.CreateAPIView):
