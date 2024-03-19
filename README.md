@@ -8,8 +8,6 @@ Live link is at https://project-x-backend-lbglg.ondigitalocean.app/
 
 Doc link at https://project-x-backend-lbglg.ondigitalocean.app/
 
-Markdown docs at [DOCUMENTATION.md](Documentation.md)
-
 ## Installation Instructions
 
 ### Prerequisites
